@@ -1,0 +1,65 @@
+﻿--07-08-2023
+* parts master - added nature of change
+* eval. tech - checked if duplicate exits
+* parts mapping - check if duplicate exists
+* cp report
+	- sample size and freq are merged if only one exists
+
+-- 04-08-2023
+* added new screen to enter part revision history
+* cp report - rev history mapped to part rev history table
+* rev.history report - corrected to map rev.history table
+* cp report - alignment and minor corrections fixed
+* parts master - removed uppercase from remarks field
+
+
+-- 03-08-2023
+* cp report corrected as per user format
+* cp report issues fixed
+* sample freq - added check box for dockaudit
+
+-- 02-08-2023
+* popup message not closing issue fixed
+* cp report 
+	- legend is added in templated and is fixed. based on customer the rows are displayed
+	- cell(14,4) was empty and is added now
+	- cell not merging in process char issue fixed.
+	- alignment issue fixed
+	- missing column added in header
+
+-- 01-08-2023
+* master screens - removed CAPITALIZE
+
+-- 31-07-2023
+* issue with control plan report is fixed
+* control plan - issue when submitting is fixed.
+* cp report - legend not showing issue is fixed
+
+-- 29-07-2023
+* parts master:
+	- prepared by, approved by are added
+	- when revised, initiate revision for all operation in control plan
+	- revision reasons are stored in revision history table
+	- mail to be sent to all cft team, prepared by, approved by when revision initiated
+* control plan:
+	- prepared by and approved by are removed
+* Pending Approval - is mapped to part master
+
+
+-- 28-07-2023 Rel.2
+* Control Plan after submit and approved only Initiate Rev. button should be enabled. 
+  Save, submit, approve should be disabled.
+* Control Plan report - format changed as per client's format
+* pdi summary and Layout inspection reports corrected
+* special chars - show in legend issue fixed
+
+--28-07-2023
+* PendingApprovals page added
+* MasterPage - added icon for PendingApprovals
+* ControlPlan - on submit mail to approving person added.
+
+--27-07-2023
+* control plan: prepared by , approved by dropdown list added
+* parts - 
+	rev date is changed to old method; 
+	part issue dt, customer part issue dt changed to multiline textbox

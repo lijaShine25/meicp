@@ -1,0 +1,839 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="OpenViewer.aspx.cs" Inherits="OpenViewer" %>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Control Plan | MEI</title>
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport" />
+    <!-- Bootstrap 3.3.5 -->
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css" />
+    <link href="Content/fontawesome/font-awesome.min.css" rel="stylesheet" />
+    <!-- Font Awesome -->
+
+    <!-- Ionicons -->
+    <link href="Content/fontawesome/ionicons.css" rel="stylesheet" />
+
+    <!-- Theme style -->
+    <link rel="stylesheet" href="dist/css/AdminLTE.min.css" />
+    <!-- AdminLTE Skins. Choose a skin from the css/skins
+         folder instead of downloading all of them to reduce the load. -->
+    <link rel="stylesheet" href="dist/css/skins/_all-skins.min.css" />
+    <!-- iCheck -->
+    <link rel="stylesheet" href="plugins/iCheck/flat/blue.css" />
+    <!-- Morris chart -->
+    <%--<link rel="stylesheet" href="plugins/morris/morris.css" />--%>
+    <!-- jvectormap -->
+    <%--<link rel="stylesheet" href="plugins/jvectormap/jquery-jvectormap-1.2.2.css">--%>
+
+    <link href="dist/css/viewer.css" rel="stylesheet" />
+    <link href="plugins/select2/select2.min.css" rel="stylesheet" />
+
+
+    <!-- bootstrap wysihtml5 - text editor -->
+    <%--<link rel="stylesheet" href="plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css">--%>
+    <!-- jQuery 2.1.4 -->
+    <script src="plugins/jQuery/jQuery-2.1.4.min.js"></script>
+    <!-- jQuery UI 1.11.4 -->
+    <script src="plugins/jQueryUI/jquery-ui.min.js"></script>
+
+    <script src="dist/js/ShowMessages.js"></script>
+    <link href="dist/css/ShowMessages.css" rel="stylesheet" />
+    <script src="plugins/select2/select2.min.js"></script>
+    <script src="Content/pdfjs/pdf.min.js"></script>
+    <script src="Content/pdfjs/pdf.worker.js"></script>
+    <script src="Content/pdfjs/viewer.js"></script>
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+        <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <style type="text/css">
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: black;
+            z-index: 99;
+            opacity: 0.8;
+            filter: alpha(opacity=80);
+            -moz-opacity: 0.8;
+            min-height: 100%;
+            width: 100%;
+        }
+
+        .loading {
+            /*font-family: Arial;
+        font-size: 10pt;
+        border: 5px solid #67CFF5;
+        width: 200px;
+        height: 100px;*/
+            display: none;
+            position: fixed;
+            background-color: White;
+            z-index: 999;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            padding-left: 5px;
+            margin-left: 0px;
+        }
+
+        .container {
+            max-width: 100%;
+            padding-right: 25px;
+            padding-left: 5px;
+            margin-right: auto;
+            margin-left: auto;
+        }
+
+        body {
+            --bs-body-font-size: 16px;
+        }
+
+        .btn {
+            font-size: var(--bs-body-font-size);
+        }
+
+        .form-group {
+            font-size: 15px;
+        }
+    </style>
+
+</head>
+<body class="hold-transition skin-blue-light layout-top-nav">
+    <div class="wrapper">
+        <header class="main-header">
+            <!-- Header Navbar: style can be found in header.less -->
+            <nav class="navbar navbar-static-top">
+                <div class="container">
+                    <div class="navbar-header">
+                        <a class="navbar-brand" href="#">
+                            <img src="dist/img/mei_logo.png" height="48" width="90" />&nbsp;&nbsp;
+                        <span style="font-size: x-large; color: white; padding-top: 10px;"><b>Control Plan</b></span>
+                        </a>
+
+                    </div>
+                    <div class="navbar-custom-menu">
+                        <ul class="nav navbar-nav hidden">
+                            <li class="dropdown user user-menu"><a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                <i class="glyphicon glyphicon-user"></i><span>
+                                    <asp:Label ID="lblUserName4" Text="Administrator" runat="server" /></span>
+                            </a></li>
+                            <%--<li class="minuteselect">
+                                <a href="DashboardMain.aspx" id="portalHome" runat="server">
+                                    <i class="fa fa-home"></i>
+                                </a>
+                            </li>
+                            <li class="dropdown user user-menu">
+                                <a href="LoginPage.aspx?p=TABvAGcAbwB1AHQA" id="a1"><i class="fa fa-sign-out"></i>&nbsp;Sign out</a>
+                            </li>--%>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </header>
+        <div class="content-wrapper">
+            <!-- Content Header (Page header) -->
+            <section class="content-header">
+                <h1>Part Document Viewer
+                </h1>
+            </section>
+            <section class="content">
+                <form id="form1" runat="server">
+                    <asp:ScriptManager ID="ScriptManager1" runat="server">
+                    </asp:ScriptManager>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="box no-border no-header no-margin no-pad-top no-padding small">
+                                <div class="box-body">
+
+                                    <div class="col-sm-2">
+                                        <div class="form-group">
+                                            <label for="part no">Part No.</label>
+                                            <asp:DropDownList runat="server" ID="ddlpart_slno" CssClass="form-control myselect" AutoPostBack="true" OnSelectedIndexChanged="ddlpart_slno_OnSelectedIndexChanged">
+                                                <asp:ListItem Text="Select..." />
+                                            </asp:DropDownList>
+                                            <asp:RequiredFieldValidator ID="RequiredFieldValidator2" ErrorMessage="Data Missing!" ControlToValidate="ddlpart_slno" runat="server" InitialValue="Select..."
+                                                CssClass="label label-danger" Display="Dynamic" ValidationGroup="mandatories" />
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <div class="form-group">
+                                            <label for="oper no">Operation</label>
+                                            <asp:DropDownList runat="server" ID="ddloperation_slno" CssClass="form-control" AutoPostBack="true" OnSelectedIndexChanged="ddloprn_OnSelectedIndexChanged">
+                                                <asp:ListItem Text="Select..." />
+                                                <asp:ListItem Text="All" />
+                                            </asp:DropDownList>
+                                            <asp:RequiredFieldValidator ID="RequiredFieldValidator3" ErrorMessage="Data Missing!" ControlToValidate="ddloperation_slno" runat="server" InitialValue="Select..."
+                                                CssClass="label label-danger" Display="Dynamic" ValidationGroup="mandatories" />
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-2 hidden">
+                                        <div class="form-group">
+                                            <label for="char">Characteristics</label>
+                                            <asp:DropDownList runat="server" ID="ddlchar" CssClass="form-control">
+                                            </asp:DropDownList>
+                                            <asp:RequiredFieldValidator ID="RequiredFieldValidator1" ErrorMessage="Data Missing!" ControlToValidate="ddlchar" runat="server" InitialValue="Select..."
+                                                CssClass="label label-danger" Display="Dynamic" ValidationGroup="mandatories" />
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3">
+                                        <div class="form-group">
+                                            <label for="ddl">Select File to Display</label>
+                                            <asp:DropDownList runat="server" ID="ddlfiles" CssClass="form-control" AutoPostBack="true" OnSelectedIndexChanged="ddlfiles_OnSelectedIndexChanged">
+                                            </asp:DropDownList>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-2">
+                                            <div class="form-group">
+                                                <label for="ddlpartdoc">Select Part Documents</label>
+                                                <asp:DropDownList runat="server" ID="ddlpartdoc" CssClass="form-control" AutoPostBack="true" OnSelectedIndexChanged="ddlpartdoc_OnSelectedIndexChanged">
+                                                    <asp:ListItem Text="Select" Value="0" />
+                                                </asp:DropDownList>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <div class="form-group">
+                                                <label for="txtRowHeight">Row Height</label>
+                                                <asp:TextBox runat="server" ID="txtRowHeight" CssClass="form-control">
+                                                </asp:TextBox>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-5 pull-right">
+                                            <br />
+                                            <div class="margin">
+                                                
+                                                <asp:Button Text="Open File" ID="btnopen" OnClientClick="ShowProgress();" CssClass="bottom btn btn-sm btn-flat btn-instagram" runat="server" />
+                                                <a id="lnkxl" href="#" class="btn btn-sm btn-success btn-flat" runat="server"><i class="fa fa-download"></i>Excel</a>
+                                                <a id="lnkpdf" href="#" class="btn btn-sm btn-danger btn-flat" runat="server"><i class="fa fa-download"></i>PDF</a>
+                                                <%-- <div class="btn-group">
+                                                
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-info btn-sm btn-flat"  id="btndownload">Download</button>
+                                                    <button type="button" class="btn btn-info btn-sm btn-flat dropdown-toggle"  id="btndownload_img" data-toggle="dropdown">
+                                                        <span class="caret"></span>
+                                                        <span class="sr-only">Toggle Dropdown</span>
+                                                    </button>
+                                                    
+                                                    <ul class="dropdown-menu" role="menu">
+                                                        <li></li>
+                                                        <li></li>
+                                                    </ul>
+                                                </div>
+                                            </div>--%>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="box">
+                                <div class="box-body">
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <div class="col-md-4">
+                                                <button class="btn btn-xs btn-bitbucket" id="prev">Previous Page</button>
+                                                <button class="btn btn-xs btn-bitbucket" id="next">Next Page</button>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <span>Page: <span id="page_num"></span>/ <span id="page_count"></span></span>
+                                            </div>
+                                            <div class="col-md-4 text-right">
+                                                <button class="btn btn-xs btn-twitter" id="zoominbutton">Zoom in</button>
+                                                <button class="btn btn-xs btn-twitter" id="zoomoutbutton">Zoom out</button>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <div style="overflow: scroll;">
+                                        <canvas id="pdf-canvas"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row hidden">
+                        <div class="col-md-3">
+                            <div class="box">
+                                <div class="box-body no-border no-header">
+
+                                    <div class="btn-group btn-group-justified btn-group-vertical">
+                                        <asp:Button runat="server" ID="btnfile1" Text="File 1" CssClass="btn btn-block btn-linkedin btn-flat" /><br />
+                                        <asp:Button runat="server" ID="btnfile2" Text="File 2" CssClass="btn btn-block btn-linkedin btn-flat" /><br />
+                                        <asp:Button runat="server" ID="btnfile3" Text="File 3" CssClass="btn btn-block btn-linkedin btn-flat" /><br />
+                                        <asp:Button runat="server" ID="btnfile4" Text="File 4" CssClass="btn btn-block btn-linkedin btn-flat" /><br />
+                                        <asp:Button runat="server" ID="btncp" Text="Open Control Plan" CssClass="btn btn-block btn-microsoft btn-flat" OnClick="btnCp_OnClick" /><br />
+                                        <asp:Button runat="server" ID="btnli" Text="Open Line Inspection Chart" CssClass="btn btn-block btn-facebook btn-flat" /><br />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                        </div>
+                    </div>
+                    <asp:HiddenField ID="hdnemplslno" runat="server" />
+                    <asp:HiddenField ID="hdnMode" runat="server" Value="I" />
+                    <asp:HiddenField ID="hdnSlNo" runat="server" Value="-1" />
+                    <asp:HiddenField ID="hdncheck" runat="server" />
+                    <asp:HiddenField ID="hdnIsAdmin" runat="server" />
+                    <div class="loading" align="center">
+                        <img src="dist/img/Preloader_3.gif" alt="" id="img1" />
+                        <%--<br /> <div class="overlay">
+                            <i class="fa fa-refresh fa-spin"></i>
+                        </div>--%>
+                    </div>
+                </form>
+            </section>
+        </div>
+
+
+        <footer class="main-footer">
+            <div class="pull-right hidden-xs">
+                <b>Version</b> 2.3.0
+            </div>
+            <strong>Copyright &copy; 2023 <a href="https://nngi.co.in">NNGI</a></strong> All rights reserved.
+        </footer>
+
+
+    </div>
+    <!-- ./wrapper -->
+
+    <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
+    <!-- Bootstrap 3.3.5 -->
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+    <!-- Morris.js charts -->
+    <%--<script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+    <script src="plugins/morris/morris.min.js"></script>--%>
+
+    <!-- datepicker -->
+
+
+    <script src="plugins/datepicker/bootstrap-datepicker.js"></script>
+    <link rel="stylesheet" href="plugins/datepicker/datepicker3.css" />
+
+
+    <!-- Bootstrap WYSIHTML5 -->
+    <script src="plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.min.js"></script>
+    <!-- Slimscroll -->
+    <script src="plugins/slimScroll/jquery.slimscroll.min.js"></script>
+    <!-- FastClick -->
+    <script src="plugins/fastclick/fastclick.min.js"></script>
+    <!-- AdminLTE App -->
+    <script src="dist/js/app.min.js"></script>
+    <script>
+
+        // disable the download button
+        $('#btndownload').attr('disabled', 'disabled');
+        $('#btndownload_img').attr('disabled', 'disabled');
+
+        function ShowProgress() {
+            $('#img1').show();
+            setTimeout(function () {
+                var modal = $('<div />');
+                modal.addClass("modal");
+                $('body').append(modal);
+                var loading = $(".loading");
+                loading.show();
+                var top = Math.max($(window).height() / 2 - loading[0].offsetHeight / 2, 0);
+                var left = Math.max($(window).width() / 2 - loading[0].offsetWidth / 2, 0);
+                loading.css({ top: top, left: left });
+            }, 200);
+        }
+        $(document).ready(function () {
+            var pdfDoc = null,
+                pageNum = 1,
+                pageRendering = false,
+                pageNumPending = null,
+                scale = 1.35,
+                resolution = 1,
+                canvas = document.getElementById('pdf-canvas'),
+                ctx = canvas.getContext('2d');
+
+
+
+            $('#btncp').on('click', function (e) {
+                e.preventDefault();
+                /*alert("test");*/
+
+                GetFile();
+                //LoadPdfFromUrl("/pdftemp/cp_3235E3905_ID TURNING.pdf");
+            });
+
+            function ShowPdf(fname) {
+                /** * Asynchronously downloads PDF.            */
+                pdfjsLib.getDocument(fname).promise.then(function (pdfDoc_) {
+                    pdfDoc = pdfDoc_;
+                    document.getElementById('page_count').textContent = pdfDoc.numPages;
+                    //pdfDoc.renderPage(pageNum);
+                    renderPage(pageNum);
+                });
+                $('#img1').hide();
+                $('#btndownload').removeAttr('disabled');
+                $('#btndownload_img').removeAttr('disabled');
+                var xlfname = fname.replace('.pdf', '.xlsx');
+                $('#lnkpdf').attr('href', fname);
+                $('#lnkpdf').attr('target', '_blank');
+                $('#lnkxl').attr('href', xlfname);
+
+            }
+
+
+            $('#btnopen').on('click', function (e) {
+                e.preventDefault();
+
+                var doc = $('#ddlfiles :selected').text();
+                console.log('doc to open:', doc);
+
+                if (doc == 'Control Plan') {
+                    GetFileCP();
+                }
+                else if (doc == 'Layout Inspection') {
+                    GetFileLayoutInsp();
+                }
+                else if (doc == 'PCC') {
+                    GetFilePcc();
+                }
+                else if (doc == 'FOI') {
+                    GetFileFoi();
+                }
+
+                else if (doc == 'PMC') {
+                    GetFilePmc();
+                }
+                else if (doc == 'Dock Audit') {
+                    GetFileDock();
+                }
+                else if (doc == 'PDI Summary') {
+                    GetFilePDISummary();
+                }
+                else if (doc == 'Control Chart') {
+                    GetFileControlChart();
+                }
+
+                else if (doc == 'PDI Checksheet-2 Per Skid') {
+                    GetFilePDIChecksheet_2PerSkid();
+                }
+                else if (doc == 'PDI Checksheet-Every Hour') {
+                    GetFilePDIChecksheet_EveryHour();
+                }
+
+                else if (doc == 'PCC Bridge') {
+                    GetFilePccBridge();
+                }
+
+                else if (doc == 'PCC IIR') {
+                    GetFilePccIIR();
+                }
+                else {
+                    // open the pdf file
+                    var s = "otherDocs";
+                    $('#hdncheck').val(s);
+                    //var docfl = $('#ddlfiles :selected').val();
+                    var docfl = $('#ddlpartdoc :selected').val();
+                    var fname = "Documents/" + docfl;
+                    ShowPdf(fname);
+                }
+            });
+
+            function GetFileCP() {
+                var opslno = $('#<%=ddloperation_slno.ClientID%>').val();
+                var partslno = $('#<%=ddlpart_slno.ClientID%>').val();
+                var Isadmin = $('#<%=hdnIsAdmin.ClientID%>').val();
+                console.log(partslno);
+                // debugger;
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    url: "data.asmx/GenerateCP",
+                   // data: "{'partsl' : " + partslno + ",'oprnsl' :'" + opslno + "'}",
+                   
+                    data: JSON.stringify({
+                        partsl: parseInt(partslno),
+                        oprnsl: opslno,
+                        Isadmin: Isadmin // If it's a string, you can pass directly
+                    }),
+                    dataType: "json",
+                    success: function (res) {
+                        var ret = res.d;
+                    }
+                }).done(function (res) {
+                    /*alert(res.d);*/
+                    console.log(res.d)
+                    var fname = "pdftemp/" + res.d;
+                    ShowPdf(fname);
+                })
+            }
+
+            function GetFileLayoutInsp() {
+                var opslno = $('#<%=ddloperation_slno.ClientID%>').val();
+                var partslno = $('#<%=ddlpart_slno.ClientID%>').val();
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    url: "data.asmx/GenerateLayoutInsp",
+                    data: "{'partsl' : " + partslno + ",'oprnsl' :" + opslno + "}",
+                    dataType: "json",
+                    success: function (res) {
+                        var ret = res.d;
+                    }
+                }).done(function (res) {
+                    /*alert(res.d);*/
+                    console.log(res.d);
+                    var fname = "pdftemp/" + res.d;
+                    ShowPdf(fname);
+                })
+            }
+
+            function GetFilePcc() {
+                var opslno = $('#<%=ddloperation_slno.ClientID%>').val();
+                var partslno = $('#<%=ddlpart_slno.ClientID%>').val();
+                var rowhgt = $('#<%=txtRowHeight.ClientID%>').val();
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    url: "data.asmx/GeneratePcc",
+                    data: "{'partsl' : " + partslno + ",'oprnsl' :" + opslno + ",'rwhght':" + rowhgt + "}",
+                    dataType: "json",
+                    success: function (res) {
+                        var ret = res.d;
+                    }
+                }).done(function (res) {
+                    //alert(res.d);
+                    console.log("display message:" + res.d);
+                    var fname = "pdftemp/" + res.d;
+                    ShowPdf(fname);
+                })
+            }
+
+
+            function GetFilePccBridge() {
+                var opslno = $('#<%=ddloperation_slno.ClientID%>').val();
+                var partslno = $('#<%=ddlpart_slno.ClientID%>').val();
+                var rowhgt = $('#<%=txtRowHeight.ClientID%>').val();
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    url: "data.asmx/GeneratePccBridge",
+                    data: "{'partsl' : " + partslno + ",'oprnsl' :" + opslno + ",'rwhght':" + rowhgt + "}",
+                    dataType: "json",
+                    success: function (res) {
+                        var ret = res.d;
+                    }
+                }).done(function (res) {
+                    //alert(res.d);
+                    console.log("display message:" + res.d);
+                    var fname = "pdftemp/" + res.d;
+                    ShowPdf(fname);
+                })
+            }
+            function GetFilePccIIR() {
+                var opslno = $('#<%=ddloperation_slno.ClientID%>').val();
+                var partslno = $('#<%=ddlpart_slno.ClientID%>').val();
+                var rowhgt = $('#<%=txtRowHeight.ClientID%>').val();
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    url: "data.asmx/GeneratePccIIR",
+                    data: "{'partsl' : " + partslno + ",'oprnsl' :" + opslno + ",'rwhght':" + rowhgt + "}",
+                    dataType: "json",
+                    success: function (res) {
+                        var ret = res.d;
+                    }
+                }).done(function (res) {
+                    //alert(res.d);
+                    console.log("display message:" + res.d);
+                    var fname = "pdftemp/" + res.d;
+                    ShowPdf(fname);
+                })
+            }
+            function GetFileFoi() {
+                var opslno = $('#<%=ddloperation_slno.ClientID%>').val();
+                var partslno = $('#<%=ddlpart_slno.ClientID%>').val();
+                var rowhgt = $('#<%=txtRowHeight.ClientID%>').val();
+                //debugger;
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    url: "data.asmx/GenerateFoi",
+                    data: "{'partsl' : " + partslno + ",'oprnsl' :" + opslno + ",'rwhght':" + rowhgt + "}",
+                    dataType: "json",
+                    success: function (res) {
+                        var ret = res.d;
+                    }
+                }).done(function (res) {
+                    /*alert(res.d);*/
+                    console.log(res.d);
+                    var fname = "pdftemp/" + res.d;
+                    ShowPdf(fname);
+                })
+            }
+
+            function GetFilePmc() {
+                var opslno = $('#<%=ddloperation_slno.ClientID%>').val();
+                var partslno = $('#<%=ddlpart_slno.ClientID%>').val();
+                var charslno = $('#<%=ddlchar.ClientID%>').val();
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    url: "data.asmx/GeneratePmc",
+                    data: "{'partsl' : " + partslno + ",'oprnsl' :" + opslno + ",'charsl':'" + charslno + "'}",
+                    dataType: "json",
+                    success: function (res) {
+                        var ret = res.d;
+                    }
+                }).done(function (res) {
+                    /*alert(res.d);*/
+                    console.log(res.d);
+                    var fname = "pdftemp/" + res.d;
+                    ShowPdf(fname);
+                })
+            }
+            function GetFileDock() {
+                var opslno = $('#<%=ddloperation_slno.ClientID%>').val();
+                var partslno = $('#<%=ddlpart_slno.ClientID%>').val();
+                var rowhgt = $('#<%=txtRowHeight.ClientID%>').val();
+                // debugger;
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    url: "data.asmx/GenerateDoc",
+                    data: "{'partsl' : " + partslno + ",'oprnsl' :" + opslno + ",'rwhght':" + rowhgt + "}",
+                    dataType: "json",
+                    success: function (res) {
+                        var ret = res.d;
+                    }
+                }).done(function (res) {
+                    /*alert(res.d);*/
+                    console.log(res.d);
+                    var fname = "pdftemp/" + res.d;
+                    ShowPdf(fname);
+                })
+            }
+            function GetFilePDISummary() {
+                var opslno = $('#<%=ddloperation_slno.ClientID%>').val();
+                var partslno = $('#<%=ddlpart_slno.ClientID%>').val();
+                var rowhgt = $('#<%=txtRowHeight.ClientID%>').val();
+                // debugger;
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    url: "data.asmx/GeneratePDISummary",
+                    data: "{'partsl' : " + partslno + ",'oprnsl' :" + opslno + ",'rwhght':" + rowhgt + "}",
+                    dataType: "json",
+                    success: function (res) {
+                        var ret = res.d;
+                    }
+                }).done(function (res) {
+                    /*alert(res.d);*/
+                    console.log(res.d);
+                    var fname = "pdftemp/" + res.d;
+                    ShowPdf(fname);
+                })
+            }
+            function GetFileControlChart() {
+                var opslno = $('#<%=ddloperation_slno.ClientID%>').val();
+                var partslno = $('#<%=ddlpart_slno.ClientID%>').val();
+                var rowhgt = $('#<%=txtRowHeight.ClientID%>').val();
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    url: "data.asmx/GenerateControlChart",
+                    data: "{'partsl' : " + partslno + ",'oprnsl' :" + opslno + ",'rwhght':" + rowhgt + "}",
+                    dataType: "json",
+                    success: function (res) {
+                        var ret = res.d;
+
+                    }
+                }).done(function (res) {
+                    //alert(res.d);
+                    console.log("display message:" + res.d);
+                    var fname = "pdftemp/" + res.d;
+
+                    ShowPdf(fname);
+                })
+            }
+
+            function GetFilePDIChecksheet_2PerSkid() {
+                var opslno = $('#<%=ddloperation_slno.ClientID%>').val();
+                var partslno = $('#<%=ddlpart_slno.ClientID%>').val();
+                var rowhgt = $('#<%=txtRowHeight.ClientID%>').val();
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    url: "data.asmx/GeneratePDI_2PerSkid",
+                    data: "{'partsl' : " + partslno + ",'oprnsl' :" + opslno + ",'rwhght':" + rowhgt + "}",
+                    dataType: "json",
+                    success: function (res) {
+                        var ret = res.d;
+
+                    }
+                }).done(function (res) {
+                    //alert(res.d);
+                    console.log("display message:" + res.d);
+                    var fname = "pdftemp/" + res.d;
+
+                    ShowPdf(fname);
+                })
+            }
+
+
+
+            function GetFilePDIChecksheet_EveryHour() {
+                var opslno = $('#<%=ddloperation_slno.ClientID%>').val();
+                var partslno = $('#<%=ddlpart_slno.ClientID%>').val();
+                var rowhgt = $('#<%=txtRowHeight.ClientID%>').val();
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    url: "data.asmx/GeneratePDI_EveryHour",
+                    data: "{'partsl' : " + partslno + ",'oprnsl' :" + opslno + ",'rwhght':" + rowhgt + "}",
+                    dataType: "json",
+                    success: function (res) {
+                        var ret = res.d;
+
+                    }
+                }).done(function (res) {
+                    //alert(res.d);
+                    console.log("display message:" + res.d);
+                    var fname = "pdftemp/" + res.d;
+
+                    ShowPdf(fname);
+                })
+            }
+            /**
+         * Get page info from document, resize canvas accordingly, and render page.
+         * @param num Page number.
+         */
+            function renderPage(num) {
+                pageRendering = true;
+                // Using promise to fetch the page
+                pdfDoc.getPage(num).then(function (page) {
+                    var viewport = page.getViewport({ scale: scale });
+                    // Support HiDPI-screens.
+                    var outputScale = window.devicePixelRatio || 1;
+
+                    canvas.width = Math.floor(viewport.width * outputScale);
+                    canvas.height = Math.floor(viewport.height * outputScale);
+                    canvas.style.width = Math.floor(viewport.width) + "px";
+                    canvas.style.height = Math.floor(viewport.height) + "px";
+
+                    var transform = outputScale !== 1
+                        ? [outputScale, 0, 0, outputScale, 0, 0]
+                        : null;
+
+
+                    // Render PDF page into canvas context
+                    var renderContext = {
+                        canvasContext: ctx,
+                        transform: transform,
+                        viewport: viewport
+                    };
+                    var renderTask = page.render(renderContext);
+
+                    // Wait for rendering to finish
+                    renderTask.promise.then(function () {
+                        pageRendering = false;
+                        if (pageNumPending !== null) {
+                            // New page rendering is pending
+                            renderPage(pageNumPending);
+                            pageNumPending = null;
+                        }
+                    });
+                });
+
+                // Update page counters
+                document.getElementById('page_num').textContent = num;
+            }
+
+
+            /**
+         * If another page rendering in progress, waits until the rendering is
+         * finised. Otherwise, executes rendering immediately.
+         */
+            function queueRenderPage(num) {
+                if (pageRendering) {
+                    pageNumPending = num;
+                } else {
+                    renderPage(num);
+                }
+            }
+
+
+
+            /**
+             * Displays previous page.
+             */
+            function onPrevPage() {
+
+                if (pageNum <= 1) {
+                    return;
+                }
+                pageNum--;
+                queueRenderPage(pageNum);
+            }
+            // document.getElementById('prev').addEventListener('click', onPrevPage);
+
+            /**
+             * Displays next page.
+             */
+            function onNextPage() {
+                if (pageNum >= pdfDoc.numPages) {
+                    return;
+                }
+                pageNum++;
+                queueRenderPage(pageNum);
+            }
+            // document.getElementById('next').addEventListener('click', onNextPage);
+
+            $('#prev').on('click', function (e) {
+                e.preventDefault();
+                onPrevPage();
+            });
+
+            $('#next').on('click', function (e) {
+                e.preventDefault();
+                onNextPage();
+            });
+
+            $('#zoominbutton').on('click', function (e) {
+                e.preventDefault();
+                scale = scale + 0.25;
+                queueRenderPage(pageNum);
+            });
+
+            $('#zoomoutbutton').on('click', function (e) {
+                e.preventDefault();
+                scale = scale - 0.25;
+                queueRenderPage(pageNum);
+            })
+
+
+        });//end of document
+
+
+        $('.myselect').select2({
+            theme: "classic"
+        });
+
+
+    </script>
+
+</body>
+</html>

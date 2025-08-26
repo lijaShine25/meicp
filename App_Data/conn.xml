@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<constants>
+  <!-- 0 -->
+  <sqlconstr connectionString="Data Source=MSTLPDYFS01; Initial Catalog=mstl_controlplan; user id =sa; password = secure@09;Asynchronous Processing=true">
+  </sqlconstr>
+  <!-- 1 -->
+  <tempfilepath pathname="\\10.240.42.26\App_Data\ControlPlanTemplate.xlsx"> 
+</tempfilepath>
+<!-- 2 -->
+  <Litempfilepath pathname="\\10.240.42.26\App_Data\LineInspectionTemplate.xlsx">
+  </Litempfilepath>
+  <!-- 3 -->
+  <Imagefilepath pathname="\\10.240.42.26\Documents\">
+  </Imagefilepath>
+<!-- 4 -->
+<LI_linesPerPage lines="24"></LI_linesPerPage>
+  <!-- 5 -->
+  <tempfilepathFI pathname="\\10.240.42.26\App_Data\FI_ControlPlanTemplate.xlsx"> 
+</tempfilepathFI>
+<!-- 6 -->
+<Ritempfilepath pathname="\\10.240.42.26\App_Data\Receiving Inspection Format.xlsx">
+</Ritempfilepath> 
+<!-- 7 -->
+<Fitempfilepath pathname="\\10.240.42.26\App_Data\Final Inspection Format.xlsx">
+</Fitempfilepath>
+</constants>

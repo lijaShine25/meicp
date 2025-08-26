@@ -1,0 +1,83 @@
+﻿using Newtonsoft.Json;
+using NPoco;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class PrintReport : System.Web.UI.Page
+{
+
+    public enum MessageType { Success, Error, Info, Warning };
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+
+        if (!Page.IsPostBack)
+        {
+            //if (userInfo[0].is_ET_User != "Y")
+            //{
+            //    Response.Redirect("~/AccessDenied.aspx");
+            //}
+
+
+            LoadParts();
+
+            if (Request.QueryString.HasKeys())
+            {
+                hdnSlNo.Value = Request.QueryString["slno"];
+                hdnMode.Value = "E";
+                //GetDetails();
+                //btnDelete.Enabled = true;
+            }
+            else
+            {
+                //btnDelete.Enabled = false;
+            }
+        }
+    }
+
+    void LoadParts()
+    {
+
+        Crud_parts crud = new Crud_parts();
+        List<Class_parts> lst = crud.usp_partsSelect().ToList();
+        ddlpart_slno.Items.Clear();
+
+        for (int cnt = 0; cnt < lst.Count; cnt++)
+        {
+            ddlpart_slno.Items.Add(new ListItem(lst[cnt].PartDescription, Convert.ToString(lst[cnt].part_slno)));
+        }
+
+        ddlpart_slno.Items.Insert(0, "Select...");
+    }
+
+    void LoadOperationsFromparts()
+    {
+        using (Database db = new Database("connString"))
+        {
+            var x = db.Query<Class_operations>("select * FROM operations o,partsmapping p where p.operation_slno=o.operation_slno AND p.part_slno=@0", Convert.ToInt32(ddlpart_slno.SelectedValue));
+            ddloperation_slno.Items.Clear();
+            ddloperation_slno.DataSource = x;
+            ddloperation_slno.DataTextField = "OperationDesc";
+            ddloperation_slno.DataValueField = "operation_slno";
+            ddloperation_slno.DataBind();
+
+            ddloperation_slno.Items.Insert(0, new ListItem("Select", "0"));
+        }
+    }
+
+
+    protected void ddlpart_slno_OnSelectedIndexChanged(object sender, EventArgs e)
+    {
+        LoadOperationsFromparts();
+    }
+
+
+    protected void btnViewReport_Click(object sender, EventArgs e)
+    {
+
+    }
+}

@@ -1,0 +1,75 @@
+﻿
+<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.master" AutoEventWireup="true" CodeFile="PrintReport.aspx.cs" Inherits="PrintReport" %>
+
+<script runat="server">
+
+ 
+</script>
+<asp:Content ID="Content1" ContentPlaceHolderID="ContentPlaceHolder1" Runat="Server">
+        <form id="Form1" role="form" runat="server">
+        <div class="content-wrapper">
+            <!-- Content Header (Page header) -->
+            <section class="content-header">
+                <h1>Print Report
+                </h1>
+            </section>
+            <section class="content">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="box no-border no-margin">
+                            <div class="messagealert" id="alert_container">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+
+                     <table class="table table-bordered table-condensed">
+                                    <tr>
+                                        <td>
+                                        </td>
+
+                                       <td style="width: 150px">Part Number
+                                       </td>
+
+                                        <td style="width: 150px">
+                                            <asp:DropDownList runat="server" ID="ddlpart_slno" CssClass="form-control" 
+                                                AutoPostBack="true" 
+                                                OnSelectedIndexChanged="ddlpart_slno_OnSelectedIndexChanged" Width="200px">
+                                                <asp:ListItem Text="Select..." />
+                                            </asp:DropDownList>
+                                        </td>
+
+                                        <td style="width: 200px">Operation</td>
+                                        <td>
+                                            <asp:DropDownList runat="server" ID="ddloperation_slno" CssClass="form-control" AutoPostBack="true" OnSelectedIndexChanged="ddloperation_slno_OnSelectedIndexChanged">
+                                                <asp:ListItem Text="Select..." />
+                                            </asp:DropDownList></td>                                      
+                                </table>
+  </div>
+                </div>
+
+
+                <div class="row">
+                    <div class="col-md-12">
+                    <asp:RadioButton ID="rbControlPlanRpt" runat="server" text="Control Plan Report" Checked="false" /> <br />
+                    <asp:RadioButton ID="rbLineInspecRrt" runat="server" text="Line Inspection Report" GroupName="cp"  /><br />
+
+                    
+                    <asp:Button ID="ViewRpt" Text="ViewReport" runat="server"  CssClass="btn btn-primary"  OnClick="btnViewReport_Click" autopostback="true" />
+                      
+                    </div>
+                </div>
+
+
+
+            </section>
+        </div>
+       <asp:HiddenField ID="hdnMode" runat="server" Value="I" />
+        <asp:HiddenField ID="hdnSlNo" runat="server" Value="-1" />
+
+    </form>
+</asp:Content>
+

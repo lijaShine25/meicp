@@ -1,0 +1,3471 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Services;
+using Newtonsoft.Json;
+
+using System.IO;
+using Syncfusion.XlsIO;
+using Syncfusion.Pdf;
+using OfficeOpenXml;
+
+using System.Configuration;
+using System.Data;
+using NPoco;
+
+using System.Web.UI.WebControls.WebParts;
+using System.Reflection;
+using Syncfusion.XlsIO.Implementation;
+using Syncfusion.XlsIO.Implementation.Charts;
+using Syncfusion.XlsIO.Implementation.Shapes;
+using Syncfusion.ExcelToPdfConverter;
+using OfficeOpenXml.Style;
+using System.Runtime.Remoting.Contexts;
+using Serilog.Core;
+using Syncfusion.XlsIO.Implementation.PivotAnalysis;
+using System.Text.RegularExpressions;
+using System.Web.Script.Serialization;
+using OfficeOpenXml.Drawing;
+
+using System.Drawing;
+using Syncfusion.JavaScript.Models;
+using Syncfusion.JavaScript;
+using System.Windows.Forms;
+using iTextSharp.xmp.impl.xpath;
+using System.Web.Script.Services;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
+using System.Runtime.InteropServices;
+using System.Web.UI.WebControls;
+using System.Activities.Statements;
+using Syncfusion.JavaScript.DataVisualization.Models;
+using Syncfusion.CompoundFile.XlsIO.Native;
+using System.Activities.Expressions;
+using Google.Protobuf;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Database;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.RefAndLookup;
+using System.IO.Packaging;
+
+
+// using static System.Net.Mime.MediaTypeNames;
+/// <summary>
+/// Summary description for data
+/// </summary>
+[WebService(Namespace = "http://tempuri.org/")]
+[WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
+// To allow this Web Service to be called from script, using ASP.NET AJAX, uncomment the following line. 
+[System.Web.Script.Services.ScriptService]
+public class data : System.Web.Services.WebService
+{
+    public data()
+    {
+        //Uncomment the following line if using designed components 
+        //InitializeComponent(); 
+    }
+
+    [WebMethod]
+    public string HelloWorld()
+    {
+        return "Hello World";
+    }
+
+    [WebMethod]
+    public string GetSpecialChars()
+    {
+
+        using (Crud_SpecialChars cd = new Crud_SpecialChars())
+        {
+            return JsonConvert.SerializeObject(cd.usp_SpecialCharsSelect());
+        }
+    }
+
+    [WebMethod]
+    public string GetSpecialChars2(int custsl)
+    {
+        using (Crud_SpecialChars cd = new Crud_SpecialChars())
+        {
+            return JsonConvert.SerializeObject(cd.usp_SpecialCharsSelect().Where(x => x.cust_slno == custsl));
+        }
+    }
+
+    [WebMethod]
+    public string GetGauges()
+    {
+        using (Crud_mdMaster crud = new Crud_mdMaster())
+        {
+            List<Class_mdMaster> lst = crud.SelectAll();
+            return JsonConvert.SerializeObject(lst);
+        }
+    }
+
+    [WebMethod]
+    public string GetFrequencies()
+    {
+
+        using (Crud_SampleFrequency cd = new Crud_SampleFrequency())
+        {
+            return JsonConvert.SerializeObject(cd.usp_SampleFrequencySelect());
+        }
+    }
+
+    [WebMethod]
+    public string GetControlmethods()
+    {
+
+        using (Crud_ControlMethods cd = new Crud_ControlMethods())
+        {
+            return JsonConvert.SerializeObject(cd.usp_ControlMethodsSelect());
+        }
+    }
+
+    [WebMethod]
+    public string GetControlplanChildData(int cp_slno)
+    {
+
+        using (Crud_ControlPlan_Child cd = new Crud_ControlPlan_Child())
+        {
+            return JsonConvert.SerializeObject(cd.GetChildData(cp_slno));
+        }
+    }
+
+    [WebMethod]
+    public string GetEvalTech()
+    {
+
+        using (Crud_EvaluationTech ce = new Crud_EvaluationTech())
+        {
+
+            return JsonConvert.SerializeObject(ce.usp_EvaluationTechSelect());
+        }
+    }
+
+    [WebMethod]
+    public int GetEveltechslno(string evltech)
+    {
+
+        using (Database db = new Database("connString"))
+        {
+            //return db.SingleOrDefault<Class_EvaluationTech>(" where evalTech=@0", evltech).evalTech_slno;
+            var obj = db.FetchWhere<Class_EvaluationTech>(x => x.evalTech == evltech);
+            if (obj != null && obj.Count > 0)
+            {
+                if (obj[0].evalTech_slno == null)
+                {
+                    return -1;
+                }
+                else
+                {
+                    return obj[0].evalTech_slno;
+                }
+            }
+            else
+            {
+                return -1;
+            }
+        }
+    }
+
+    [WebMethod]
+    public int GetFreqslno(string freq)
+    {
+
+        using (Database db = new Database("connString"))
+        {
+            //return db.SingleOrDefault<Class_SampleFrequency>(" where FreqDesc=@0", freq).freq_slno;
+            var obj = db.FetchWhere<Class_SampleFrequency>(x => x.FreqDesc == freq);
+            if (obj != null && obj.Count > 0)
+            {
+                if (obj[0].freq_slno == null)
+                {
+                    return -1;
+                }
+                else
+                {
+                    return obj[0].freq_slno;
+                }
+            }
+            else
+            {
+                return -1;
+            }
+        }
+    }
+
+    [WebMethod]
+    public string GetCFTMembers(int slno)
+    {
+        Crud_CFTeamEmployees c = new Crud_CFTeamEmployees();
+        return c.GetMembersList(slno);
+    }
+
+    [WebMethod]
+    public int GetControlslno(string ctrl)
+    {
+
+        using (Database db = new Database("connString"))
+        {
+            //return db.SingleOrDefault<Class_ControlMethods>(" where methodDesc=@0", ctrl).method_slno;
+            var obj = db.FetchWhere<Class_ControlMethods>(x => x.methodDesc == ctrl);
+            if (obj != null && obj.Count > 0)
+            {
+                if (obj[0].method_slno == null)
+                {
+                    return -1;
+                }
+                else
+                {
+                    return obj[0].method_slno;
+                }
+            }
+            else
+            {
+                return -1;
+            }
+        }
+    }
+
+    [WebMethod]
+    public string GenerateCP1(int partsl, string oprnsl)
+    {
+        try
+        {
+            string sql = "";
+            string sqlrevdtls = "";
+            string sqllegend = "";
+            int imgno = 0;
+            if (oprnsl == "All")
+            {
+                sql = @"SELECT  c.cp_slno FROM controlplan c where c.rev_no =(SELECT MAX(p.rev_no ) from controlplan p WHERE " +
+                       " p.Submitstatus='A' and p.Obsolete='N' AND c.part_slno=p.part_slno and c.operation_slno=p.operation_slno AND c.machine_slno=p.machine_slno ) and c.part_slno=" + partsl;
+
+            }
+            else
+            {
+                sql = @"SELECT  c.cp_slno FROM controlplan c where c.rev_no =(SELECT MAX(p.rev_no ) from controlplan p WHERE " +
+                       " p.Submitstatus='A' and p.Obsolete='N' AND c.part_slno=p.part_slno and c.operation_slno=p.operation_slno AND c.machine_slno=p.machine_slno ) and c.part_slno=" + partsl + " and c.operation_slno= " + oprnsl + "";
+
+            }
+
+            sqlrevdtls = @"select * from part_revision_history where part_slno=@0";
+
+            sqllegend = @"select distinct top 4 s.splchar_slno, s.splCharFile, s.spl_char_desc 
+from SpecialChars s
+inner join customers c on c.cust_slno=s.cust_slno
+inner join parts p on p.Customer_name=c.cust_name
+where p.part_slno=" + partsl + " and s.show_in_legend=1";
+
+            string fname = "cp2_" + partsl + "_" + oprnsl + ".xlsx";
+            string filepath = "~/pdftemp/" + fname;
+            FileInfo excelFile = new FileInfo(Server.MapPath(filepath));
+            FileInfo templateFile = new FileInfo(Server.MapPath("~/App_Data/ControlPlanTemplate2.xlsx"));
+
+            Logger.LogError(sql);
+            string cp_slno = string.Empty;
+            int startRow = 8;
+            int endrow = startRow;
+
+            using (Database db = new Database("connString"))
+            {
+                cp_slno = db.ExecuteScalar<string>(sql);
+                if (oprnsl == "All")
+                {
+                    db.Execute(";exec SP_Temp_RptControlPlan @@cp_slno=@0,@@part_slno=@1, @@oper_slno=@2", null, partsl, null);
+                }
+                else
+                {
+                    db.Execute(";exec SP_Temp_RptControlPlan @@cp_slno=@0,@@part_slno=@1, @@oper_slno=@2", cp_slno, partsl, oprnsl);
+                }
+                List<Class_part_revision_history> lstrev = db.Fetch<Class_part_revision_history>(sqlrevdtls, partsl);
+                string sqlcp = @"Select * from temp_rptControlPlan order by cast(process_no as int)";
+                string sqlpart = @"Select remarks from parts where part_slno=@0";
+                string remarks = db.ExecuteScalar<string>(sqlpart, partsl);
+                List<Class_Temp_RptControlPlan> lst = db.Fetch<Class_Temp_RptControlPlan>(sqlcp);
+                List<Class_SpecialChars> lstlegend = db.Fetch<Class_SpecialChars>(sqllegend);
+                if (lst.Count > 0)
+                {
+                    int xlrowht = 75;
+                    using (ExcelPackage xlPackage = new ExcelPackage(excelFile, templateFile))
+                    {
+                        ExcelWorksheet ws = xlPackage.Workbook.Worksheets[1];
+                       
+                        ws.Cells[3, 1].RichText.Add("PROTOTYPE");
+                        ws.Cells[3, 2].RichText.Add("PRE-LAUNCH");
+                        ws.Cells[3, 3].RichText.Add("PRODUCTION");
+
+                        if (lst[0].cpType == "PROTOTYPE")
+                        {
+                            ws.Cells[3, 2].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                            ws.Cells[3, 3].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                            ws.Cells[3, 1].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                            ws.Cells[3, 1].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                            ws.Cells[3, 1].Style.Font.Size = 19;
+                        }
+                        else if (lst[0].cpType == "PRE-LAUNCH")
+                        {
+                            ws.Cells[3, 1].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                            ws.Cells[3, 3].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                            ws.Cells[3, 2].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                            ws.Cells[3, 2].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                            ws.Cells[3, 2].Style.Font.Size = 19;
+                        }
+                        else if (lst[0].cpType == "PRODUCTION")
+                        {
+                            ws.Cells[3, 1].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                            ws.Cells[3, 2].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                            ws.Cells[3, 3].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                            ws.Cells[3, 3].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                            ws.Cells[3, 3].Style.Font.Size = 19;
+                        }
+
+                        ws.Cells[2, 1].Value = "Control Plan Number: " + lst[0].cp_number;
+                        ws.Cells[4, 1].Value = "Part Number & Rev No: " + lst[0].mstPartNo + " / " + lst[0].partIssueNo + "-" + lst[0].partIssueDt.Replace("/", ".");
+                        ws.Cells[5, 1].Value = "Part Name / Description: " + lst[0].PartDescription;
+                        ws.Cells[5, 4].Value = "Organization / Plant Approval/ Date: ";
+                        ws.Cells[6, 1].Value = "Organization: " + lst[0].organization; //supplier 
+                        ws.Cells[2, 4].Value = "Key Contact / Phone: " + lst[0].keyContact + " / " + lst[0].keyContactPhone;
+                        ws.Cells[3, 4].Value = "Core Team: " + lst[0].CFTeamName; //core team
+                        ws.Cells[4, 4].Value = "Organization Code: " + lst[0].supplier_code; //supplier code
+                        ws.Cells[6, 4].Value = "Other Approval / Date (if Req'd): " + lst[0].otherApproval + " " + lst[0].otherApprovalDt;
+                        ws.Cells[5, 9].Value = "Process Specification: "; //process specification
+                        ws.Cells[6, 9].Value = "IH Metallurgy testing reference: " + lst[0].ih_testing_ref;
+                        ws.Cells[2, 14].Value = "Date(Original): " + lst[0].originalDt.Replace("/", ".");
+                        ws.Cells[4, 14].Value = "Customer Engineering Approval / Date (if Req'd):" + lst[0].custApprovalDt.Replace("/", ".");
+                        if (lst[0].cp_revno != null)
+                        {
+                            ws.Cells[3, 14].Value = "CP Rev No / Date: " + lst[0].cp_revno.ToString() + " / " + lst[0].cp_revdt.Replace("/", "."); //cp rev no
+                        }
+                        else
+                        {
+                            ws.Cells[3, 14].Value = "CP Rev No / Date: ";
+                        }
+
+                        ws.Cells[5, 14].Value = "Customer Quality Approval (if Req'd): " + lst[0].custQaApproval;
+                        ws.Cells[6, 14].Value = "Other Approval / Date (if Req'd): " + lst[0].otherApproval + " " + lst[0].otherApprovalDt.Replace("/", ".");
+                        //ws.Cells["10:A12"].Merge = true;
+                        ws.Cells[10, 1].Value = "Remarks:" + Environment.NewLine + remarks;
+                        int row = 9;
+
+                        string imgPath = Server.MapPath("~/Documents/");
+                        string lgndPath = Server.MapPath("~/Documents/legend/");
+                        int no = 1;
+
+                        // remove the legend based on the client
+                        int rowToDelete1 = 0, rowToDelete2 = 0, rowToDelete3 = 0, rowToDelete4 = 0;
+
+                        if (lst[0].Customer_name.ToLower().Trim() == "meritor")
+                        {
+                            rowToDelete1 = 15;
+                            rowToDelete2 = 16;
+                            rowToDelete3 = 17;
+                            rowToDelete4 = 18;
+                        }
+                        else if (lst[0].Customer_name.ToLower().Trim() == "eu meritor")
+                        {
+                            rowToDelete1 = 14;
+                            rowToDelete2 = 16;
+                            rowToDelete3 = 17;
+                            rowToDelete4 = 18;
+                        }
+                        else if (lst[0].Customer_name.ToLower().Trim() == "axle tech international")
+                        {
+                            rowToDelete1 = 14;
+                            rowToDelete2 = 15;
+                            rowToDelete3 = 17;
+                            rowToDelete4 = 18;
+                        }
+                        else if (lst[0].Customer_name.ToLower().Trim() == "volvo")
+                        {
+                            rowToDelete1 = 14;
+                            rowToDelete2 = 15;
+                            rowToDelete3 = 16;
+                            rowToDelete4 = 18;
+
+                        }
+                        else if (lst[0].Customer_name.ToLower().Trim() == "apa")
+                        {
+                            rowToDelete1 = 14;
+                            rowToDelete2 = 15;
+                            rowToDelete3 = 16;
+                            rowToDelete4 = 17;
+                        }
+                        if (rowToDelete1 > 0 && rowToDelete2 > 0 && rowToDelete3 > 0 && rowToDelete4 > 0)
+                        {
+                            ws.DeleteRow(rowToDelete4);
+                            ws.DeleteRow(rowToDelete3);
+                            ws.DeleteRow(rowToDelete2);
+                            ws.DeleteRow(rowToDelete1);
+                            ws.Cells[15, 1].Value = "Prepared By: " + lst[0].preparedBy;
+                            ws.Cells[15, 11].Value = "Approved By: " + lst[0].approvedBy;
+
+                        }
+                        else
+                        {
+                            ws.Cells[19, 1].Value = "Prepared By: " + lst[0].preparedBy;
+                            ws.Cells[19, 11].Value = "Approved By: " + lst[0].approvedBy;
+                        }
+
+                        int index = (row + (lst.Count - 1) + 5);
+                        ws.InsertRow(row + 1, lst.Count - 1);
+
+                        int i = 0;
+                        int partNumStartRow = row;
+                        int oprnstartrow = row;
+                        int oprnendrow = 0;
+
+                        // display the legend images
+
+                        if (lst[0].Customer_name.ToLower().Trim().Contains("meritor") ||
+                            lst[0].Customer_name.ToLower().Trim().Contains("axle")) // meritor and eu meritor
+                        {
+                            string lgndimg1 = "Picture1.png";
+                            string lgndpth = (lgndPath + lgndimg1);
+                            FileInfo imgFilelgnd1 = new FileInfo(lgndpth);
+                            if (imgFilelgnd1.Exists)
+                            {
+                                Bitmap image = new Bitmap(lgndpth);
+                                ExcelPicture excelPicture = ws.Drawings.AddPicture("legend1", image);
+                                ExcelRangeBase cell = ws.Cells[index - 1, 2];
+                                excelPicture.SetPosition(cell.Start.Row, 14, cell.Start.Column, 6);
+                                // excelPicture.SetSize(50, 50);
+                            }
+
+                            string lgndimg2 = "Picture2.png";
+                            string lgndpth2 = (lgndPath + lgndimg2);
+                            FileInfo imgFilelgnd2 = new FileInfo(lgndpth2);
+                            if (imgFilelgnd2.Exists)
+                            {
+                                Bitmap image = new Bitmap(lgndpth2);
+                                ExcelPicture excelPicture = ws.Drawings.AddPicture("legend2", image);
+                                ExcelRangeBase cell = ws.Cells[index - 1, 7];
+                                excelPicture.SetPosition(cell.Start.Row, 14, cell.Start.Column, 6);
+                                // excelPicture.SetSize(50, 50);
+                            }
+
+                            string lgndimg3 = "Picture3.png";
+                            string lgndpth3 = (lgndPath + lgndimg3);
+                            FileInfo imgFilelgnd3 = new FileInfo(lgndpth3);
+                            if (imgFilelgnd3.Exists)
+                            {
+                                Bitmap image = new Bitmap(lgndpth3);
+                                ExcelPicture excelPicture = ws.Drawings.AddPicture("legend3", image);
+                                ExcelRangeBase cell = ws.Cells[index - 1, 11];
+                                excelPicture.SetPosition(cell.Start.Row, 14, cell.Start.Column, 6);
+                                // excelPicture.SetSize(50, 50);
+                            }
+
+                            string lgndimg4 = "Picture4.png";
+                            string lgndpth4 = (lgndPath + lgndimg4);
+                            FileInfo imgFilelgnd4 = new FileInfo(lgndpth4);
+                            if (imgFilelgnd4.Exists)
+                            {
+                                Bitmap image = new Bitmap(lgndpth4);
+                                ExcelPicture excelPicture = ws.Drawings.AddPicture("legend4", image);
+                                ExcelRangeBase cell = ws.Cells[index - 1, 15];
+                                excelPicture.SetPosition(cell.Start.Row, 14, cell.Start.Column, 6);
+                                // excelPicture.SetSize(50, 50);
+                            }
+                        }
+                        else if (lst[0].Customer_name.ToLower().Trim().Contains("volvo") ||
+                            lst[0].Customer_name.ToLower().Trim().Contains("apa"))
+                        {
+                            string lgndimg3 = "Picture3.png";
+                            string lgndpth3 = (lgndPath + lgndimg3);
+                            FileInfo imgFilelgnd3 = new FileInfo(lgndpth3);
+                            if (imgFilelgnd3.Exists)
+                            {
+                                Bitmap image = new Bitmap(lgndpth3);
+                                ExcelPicture excelPicture = ws.Drawings.AddPicture("legend3", image);
+                                ExcelRangeBase cell = ws.Cells[index - 1, 11];
+                                excelPicture.SetPosition(cell.Start.Row, 14, cell.Start.Column, 6);
+                                // excelPicture.SetSize(50, 50);
+                            }
+
+                            string lgndimg4 = "Picture4.png";
+                            string lgndpth4 = (lgndPath + lgndimg4);
+                            FileInfo imgFilelgnd4 = new FileInfo(lgndpth4);
+                            if (imgFilelgnd4.Exists)
+                            {
+                                Bitmap image = new Bitmap(lgndpth4);
+                                ExcelPicture excelPicture = ws.Drawings.AddPicture("legend4", image);
+                                ExcelRangeBase cell = ws.Cells[index - 1, 15];
+                                excelPicture.SetPosition(cell.Start.Row, 14, cell.Start.Column, 6);
+                                // excelPicture.SetSize(50, 50);
+                            }
+                        }
+                        int rwstart = 0;
+                        int rwfreqstart = 0;
+                        int rwfreq1start = 0;
+                        int flag = 0;
+                        int flagfreq = 0;
+                        int flagfreq1 = 0;
+                        
+                        while (i <= lst.Count - 1)
+                        {
+                            string op = lst[i].OperationDesc;
+                            int rowmerge = 0;
+                            no = 1;
+                            oprnstartrow = row;
+                            string sqlmachinecode = @"select machinecode from machines where machine_slno=@0";
+                            string mach = db.ExecuteScalar<string>(sqlmachinecode, lst[i].machine_slno);
+                            ws.Cells[row, 1].Value = lst[i].process_no;//process number
+                            ws.Cells[row, 2].Value = lst[i].OperationDesc;
+                            if (mach == null || mach == "" || mach=="-")
+                                ws.Cells[row, 3].Value = lst[i].MachineDesc;                   
+                            else
+                                ws.Cells[row, 3].Value = lst[i].MachineDesc + " / " + mach;
+                            string pdtchar = string.Empty;
+                            string prcchar = string.Empty;
+                            while (op == lst[i].OperationDesc)
+                            {
+                                Class_Temp_RptControlPlan c = lst[i];
+                                pdtchar = c.product_char;
+                                prcchar = c.process_char;
+                                ws.Cells[row, 4].Value = c.dimn_no;
+                                ws.Cells[row, 4].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                                ws.Cells[row, 5].Value = c.product_char;
+
+                                //ws.Cells[row, 6, row, 7].Merge = false;
+                                //ws.Cells[row, 6, row, 7].Merge = true;
+
+                                ws.Cells[row, 6].Value = c.process_char;
+
+                                if (c.splChar_slno > 0)
+                                {
+                                    string img = GetFileName(c.splChar_slno.ToString());
+                                    string pth = (imgPath + img);
+                                    FileInfo imgFile = new FileInfo(pth);
+                                    if (imgFile.Exists)
+                                    {
+                                        imgno += 1;
+                                        Bitmap image = new Bitmap(pth);
+                                        ExcelPicture excelPicture = ws.Drawings.AddPicture("PictureName" + imgno, image);
+                                        ExcelRangeBase cell = ws.Cells[row - 1, 7];
+
+                                        excelPicture.SetPosition(cell.Start.Row, 20, cell.Start.Column, 7);
+                                        excelPicture.SetSize(50, 50);
+
+                                    }
+                                }
+                                ws.Cells[row, 8].Value = string.Empty; //special characteristics 
+                                ws.Cells[row, 9].Value = c.spec1;
+                                ws.Cells[row, 10].Value = c.measurementTech;
+                                ws.Cells[row, 11].Value = c.sampleSize;
+                                ws.Cells[row, 12].Value = c.sampleFreq;
+
+
+                                // Merge columns sample size and freq if any one is empty
+                                if (!string.IsNullOrEmpty(c.sampleSize) && !string.IsNullOrWhiteSpace(c.sampleFreq))
+                                {
+                                    ws.Cells[row, 11].Value = c.sampleSize;
+                                    ws.Cells[row, 12].Value = c.sampleFreq;
+                                }
+                                else
+                                {
+                                    // ws.Cells[row, 11, row, 12].Merge = true;
+                                    if (!string.IsNullOrWhiteSpace(c.sampleSize))
+                                    {
+                                        ws.Cells[row, 11].Value = c.sampleSize;
+                                    }
+                                    else
+                                    {
+                                        ws.Cells[row, 11].Value = c.sampleFreq;
+                                    }
+                                }
+                                if (!string.IsNullOrEmpty(lst[i].sampleFreq))
+                                {
+                                    if (lst[i].sampleFreq.ToLower().Contains("every setting") || lst[i].sampleFreq.ToLower().Contains(" setting"))
+                                    { rwfreq1start = row; flagfreq1 = 1; }
+                                }
+                                ws.Cells[row, 13].Value = c.methodDesc;
+                                ws.Cells[row, 14].Value = c.measurementTech2;
+                                ws.Cells[row, 15].Value = c.sampleSize2;
+                                ws.Cells[row, 16].Value = c.sampleFreq2;
+
+                                // Merge columns sample size and freq if any one is empty
+                                if (!string.IsNullOrEmpty(c.sampleSize2) && !string.IsNullOrWhiteSpace(c.sampleFreq2))
+                                {
+                                    ws.Cells[row, 15].Value = c.sampleSize2;
+                                    ws.Cells[row, 16].Value = c.sampleFreq2;
+                                }
+                                else
+                                {
+                                    //ws.Cells[row, 15, row, 16].Merge = true;
+                                    if (!string.IsNullOrWhiteSpace(c.sampleSize2))
+                                    {
+                                        ws.Cells[row, 15].Value = c.sampleSize2;
+
+                                    }
+                                    //else
+                                    //{
+                                    //    ws.Cells[row, 16].Value = c.sampleFreq2;
+                                    //    if (i == 0) {
+                                    //        if (c.sampleFreq2.Contains("Every Setting"))
+                                    //        {
+                                    //            flagfreq = 1;
+                                    //        }
+
+                                    //    }
+
+                                    //}
+                                }
+
+                                ws.Cells[row, 16].Value = c.sampleFreq2;
+
+                                if (!string.IsNullOrEmpty(lst[i].sampleFreq2))
+                                {
+                                    if (lst[i].sampleFreq2.ToLower().Contains("every setting") || lst[i].sampleFreq2.ToLower().Contains(" setting"))
+                                    { rwfreqstart = row; flagfreq = 1; }
+                                }
+
+
+                                ws.Cells[row, 17].Value = c.methodDesc2;
+                                if (c.product_char == "Material Test")
+                                {
+                                    ws.Cells[row, 18].Merge = false;
+                                    ws.Cells[row, 18, row + 1, 18].Merge = true;
+                                    ws.Cells[row, 18].Value = c.reactionPlan;
+                                    ws.Cells[row, 18, row + 1, 18].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Top;
+                                }
+                                else if (c.product_char.Contains("Refer Supplier Report"))
+                                {
+                                    ws.Cells[row, 18].Merge = false;
+                                    ws.Cells[row, 18, row, 18].Merge = true;
+                                    ws.Cells[row, 18].Value = c.reactionPlan;
+                                    ws.Cells[row, 18, row + 1, 18].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Top;
+                                }
+                                else
+                                {
+                                    ws.Cells[row, 18].Value = c.reactionPlan;
+                                }
+
+
+                                // if only prod char or proc char exists then merge the rest of columns
+                                if (!string.IsNullOrWhiteSpace(pdtchar) || !string.IsNullOrWhiteSpace(prcchar))
+                                {
+                                    // Get the columns I and Q as their column indexes
+                                    int columnI = 8; // Column "H" is the 8th column (index starts from 1)
+                                    int columnQ = 17; // Column "Q" is the 17th column
+
+                                    if (string.IsNullOrWhiteSpace(prcchar))
+                                    {
+                                        columnI = 6;
+                                    }
+
+                                    // Check if any cell has a value between columns I and Q (inclusive)
+                                    bool hasValue = false;
+                                    for (int col = columnI; col <= columnQ; col++)
+                                    {
+                                        if (ws.Cells[row, col].Value != null && !string.IsNullOrWhiteSpace(ws.Cells[row, col].Text))
+                                        {
+                                            hasValue = true;
+                                            break;
+                                        }
+                                    }
+                                    // If no cell has a value, merge the columns I to Q
+                                    if (!hasValue)
+                                    {
+                                        var range = ws.Cells[row, columnI, row, columnQ];
+                                        range.Merge = false;
+                                        range.Merge = true;
+                                    }
+                                    else
+                                    {
+
+                                        if (!string.IsNullOrWhiteSpace(lst[i].process_char))
+                                        {
+                                            if (lst[i].process_char.ToLower().Contains("ref sop") || lst[i].process_char.ToLower().Contains(" sop") || lst[i].process_char.ToLower().Contains("refer sop")) { rwstart = row; flag = 1; }
+                                            else
+                                            {
+                                                string celladr2 = "F" + row + ":" + "G" + row;
+                                                ws.Select(celladr2);
+                                                // ws.SelectedRange.Merge = false;
+                                                ws.SelectedRange.Merge = true;
+                                            }
+                                        }
+
+
+                                    }
+                                }
+                          
+                                else
+                                {
+                                    string celladr = "E" + row + ":" + "Q" + row;
+                                    ws.Select(celladr);
+                                    ws.SelectedRange.Merge = false;
+                                    ws.SelectedRange.Merge = true;
+                                  
+                                }
+
+                                if (string.IsNullOrWhiteSpace(ws.Cells[row, 6].Text) && ws.Cells[row, 6, row, 17].Merge == false && ws.Cells[row, 6, row, 7].Merge == false && flag != 1)
+                                {
+                                    string celladr2 = "F" + row + ":" + "G" + row;
+                                    ws.Select(celladr2);
+                                    // ws.SelectedRange.Merge = false;
+                                    ws.SelectedRange.Merge = true;
+                                }
+                                // merge the cells for other columns
+                                ws.Cells[row, 11].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                                ws.Cells[row, 13].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                                ws.Cells[row, 14].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                                ws.Cells[row, 15].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                                ws.Cells[row, 16].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+
+                                ws.Cells[row, 17].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+
+                                // Vertical middle the columns
+                                ws.Cells[row, 4, row, 17].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                                ws.Cells[row, 5, row, 17].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                                row += 1;
+
+                                ws.Row(row).Height = xlrowht;
+                                no++;
+                                i++;
+                                if (i == lst.Count) break;
+                            }
+
+                            // when operation changes, merge the required columns
+                            oprnendrow = row - 1;
+                            ws.Cells[oprnstartrow, 1, oprnendrow, 1].Merge = true;
+                            ws.Cells[oprnstartrow, 2, oprnendrow, 2].Merge = true;
+                            ws.Cells[oprnstartrow, 3, oprnendrow, 3].Merge = true;
+
+                            if (flag == 1)
+                                ws.Cells[rwstart, 6, oprnendrow, 7].Merge = true;
+                            if (flagfreq == 1)
+                                ws.Cells[rwfreqstart, 16, oprnendrow, 16].Merge = true;
+                            if (flagfreq1 == 1)
+                                ws.Cells[rwfreq1start, 12, oprnendrow, 12].Merge = true;
+                            rwstart = 0;
+                            rwfreqstart = 0;
+                            rwfreq1start = 0;
+                            flagfreq = 0;
+                            flag = 0;
+                            flagfreq1 = 0;
+                            
+                            ws.Cells[oprnstartrow, 1, oprnendrow, 1].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Top;
+                            ws.Cells[oprnstartrow, 2, oprnendrow, 2].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Top;
+                            ws.Cells[oprnstartrow, 3, oprnendrow, 3].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Top;
+                            ws.Cells[oprnstartrow, 6, oprnendrow, 6].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                            ws.Cells[oprnstartrow, 16, oprnendrow, 16].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+
+                            ws.Cells[oprnstartrow, 1, oprnendrow, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                            ws.Cells[oprnstartrow, 2, oprnendrow, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                            ws.Cells[oprnstartrow, 3, oprnendrow, 3].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                            ws.Cells[oprnstartrow, 6, oprnendrow, 6].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                            ws.Cells[oprnstartrow, 16, oprnendrow, 16].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                            if (!op.ToLower().Contains("receiving inspection"))
+                            {
+                                if (!pdtchar.ToLower().Contains("material characteristics") &&
+                                   !pdtchar.ToLower().Contains("dimensional characteristics") &&
+                                   !pdtchar.ToLower().Contains("vendor control plan"))
+                                {
+                                    ws.Cells[oprnstartrow, 18, oprnendrow, 18].Merge = true;
+                                }
+                                else
+                                {
+                                    // 
+                                }
+
+                                // align the merged cells to the top
+
+                                ws.Cells[oprnstartrow, 18, oprnendrow, 18].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Top;
+
+                            }
+
+                            if (i == lst.Count) break;
+                        }
+                        endrow = row - 1;
+
+                        int revindex = 16 + lst.Count + 5;
+                        int revstart = revindex;
+
+                        if (lstrev.Count > 0)
+                        {
+                            foreach (Class_part_revision_history c in lstrev)
+                            {
+                                ws.Row(revindex).Height = xlrowht;
+                                ws.Cells[revindex, 1].Value = c.rev_no;
+                                ws.Cells[revindex, 2].Value = c.rev_date;
+                                ws.Cells[revindex, 3].Value = c.change_nature;
+                                ws.Cells[revindex, 3, revindex, 10].Merge = true;
+                               
+                                ws.Cells[revindex, 11].Value = c.rev_reasons;
+                                ws.Cells[revindex, 11, revindex, 18].Merge = true;
+                                ws.Cells[revindex, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                                ws.Cells[revindex, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                                ws.Cells[revindex, 1].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                                ws.Cells[revindex, 2].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                                ws.Cells[revindex, 3].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;                   
+                                ws.Cells[revindex, 11].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                                revindex += 1;
+                            }
+                            ws.DeleteRow(16 + lst.Count + 1);
+                            ws.DeleteRow(16 + lst.Count + 1);
+                            ws.DeleteRow(16 + lst.Count + 1);
+                            ws.DeleteRow(16 + lst.Count + 1);
+                            // ws.Cells[revstart, 1, revstart, 11].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Bottom;
+                        }
+                        int newRowCount = ws.Dimension.End.Row - (ws.Dimension.End.Row - revindex);
+                        int currentEndRow = newRowCount;
+                        ws.PrinterSettings.Orientation = eOrientation.Landscape;
+                        ws.PrinterSettings.PrintArea = ws.Cells["A1:R" + (currentEndRow-5)];
+
+                        var newrange = ws.Cells["A1:R" + currentEndRow];
+                        var border = newrange.Style.Border;
+                        // Set border style and color for all sides of the cells
+                        border.Top.Style = border.Right.Style = border.Bottom.Style = border.Left.Style = ExcelBorderStyle.Thin;
+                        border.Top.Color.SetColor(System.Drawing.Color.Black);
+                        border.Right.Color.SetColor(System.Drawing.Color.Black);
+                        border.Bottom.Color.SetColor(System.Drawing.Color.Black);
+                        border.Left.Color.SetColor(System.Drawing.Color.Black);
+                        //newrange.Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                        newrange.Style.WrapText = true;
+                        // Logic to merge Product starts here
+                        int flagforproduct = 0;
+                        row = partNumStartRow;
+                        oprnstartrow = row;
+                        oprnendrow = 0;
+                        i = 0;
+                        while (i < lst.Count - 1)
+                        {
+                            string op = lst[i].OperationDesc;
+                            int rowmerge = 0;
+                            int rwstart1 = 0;
+                            int rwend = 0;
+                            oprnstartrow = row;
+                            //  string prev_pdtchar = string.Empty;
+                            while (op == lst[i].OperationDesc)
+                            {
+                                Class_Temp_RptControlPlan c = lst[i];
+                                string pdtchar = c.product_char;
+                                if (row >= oprnstartrow)
+                                {
+                                    if (c.product_char == null || c.product_char == "-" || c.product_char == string.Empty)
+                                    {
+                                        if (flagforproduct == 0) { rwstart1 = row; }
+                                        flagforproduct = 1;
+                                        rwend = row;
+                                    }
+                                    else
+                                    {
+                                        if (flagforproduct == 1)
+                                        {
+                                            ws.Cells[rwstart1, 5, rwend, 5].Merge = true;
+                                            flagforproduct = 0;
+                                        }
+                                    }
+                                }
+                                row += 1;
+                                i++;
+                                if (i == lst.Count) break;
+                            }
+                            oprnendrow = row - 1;
+                        }
+
+
+                        // Logic to merge Product ends here
+
+                        xlPackage.SaveAs(excelFile);
+
+                        // reopen the file to adjust the row height
+                        //  SetCellValuesAndAdjustRowHeight(excelFile.ToString(), startRow, endrow, revstart, revindex - 1);
+
+                        // using syncfusion.xlsio to autofit rows
+                        string filePath = excelFile.ToString();
+                        string worksheetName = "Sheet1";
+                        int startColumn = 1;
+                        int endColumn = 17;
+                        startRow += 1;
+
+                        AutofitRowHeight(filePath, worksheetName, startRow, endrow, startColumn, endColumn);
+
+
+                        string pdfname = fname.Replace(".xlsx", ".pdf");
+                        var ret = ConvertXlstoPdf(fname, pdfname);
+                        return pdfname;
+                    }
+                }
+                return "";
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(" Error in generating control plan: " + ex.ToString());
+            return JsonConvert.SerializeObject(new { Message = ex.Message });
+        }
+    }
+	
+	    [WebMethod]
+    public string GenerateCP(int partsl, string oprnsl)
+    {
+        try
+        {
+            string sql = "";
+            string sqlrevdtls = "";
+            string sqllegend = "";
+            int imgno = 0;
+            if (oprnsl == "All")
+            {
+                sql = @"SELECT  c.cp_slno FROM controlplan c where c.rev_no =(SELECT MAX(p.rev_no ) from controlplan p WHERE " +
+                       " p.Submitstatus='A' and p.Obsolete='N' AND c.part_slno=p.part_slno and c.operation_slno=p.operation_slno AND c.machine_slno=p.machine_slno ) and c.part_slno=" + partsl;
+
+            }
+            else
+            {
+                sql = @"SELECT  c.cp_slno FROM controlplan c where c.rev_no =(SELECT MAX(p.rev_no ) from controlplan p WHERE " +
+                       " p.Submitstatus='A' and p.Obsolete='N' AND c.part_slno=p.part_slno and c.operation_slno=p.operation_slno AND c.machine_slno=p.machine_slno ) and c.part_slno=" + partsl + " and c.operation_slno= " + oprnsl + "";
+
+            }
+
+            sqlrevdtls = @"select * from part_revision_history where part_slno=@0";
+
+            sqllegend = @"select distinct top 4 s.splchar_slno, s.splCharFile, s.spl_char_desc 
+from SpecialChars s
+inner join customers c on c.cust_slno=s.cust_slno
+inner join parts p on p.Customer_name=c.cust_name
+where p.part_slno=" + partsl + " and s.show_in_legend=1";
+
+            string fname = "cp2_" + partsl + "_" + oprnsl + ".xlsx";
+            string filepath = "~/pdftemp/" + fname;
+            FileInfo excelFile = new FileInfo(Server.MapPath(filepath));
+            FileInfo templateFile = new FileInfo(Server.MapPath("~/App_Data/ControlPlanTemplate2.xlsx"));
+
+            Logger.LogError(sql);
+            string cp_slno = string.Empty;
+            int startRow = 8;
+            int endrow = startRow;
+
+            using (Database db = new Database("connString"))
+            {
+                cp_slno = db.ExecuteScalar<string>(sql);
+                if (oprnsl == "All")
+                {
+                    db.Execute(";exec SP_Temp_RptControlPlan @@cp_slno=@0,@@part_slno=@1, @@oper_slno=@2", null, partsl, null);
+                }
+                else
+                {
+                    db.Execute(";exec SP_Temp_RptControlPlan @@cp_slno=@0,@@part_slno=@1, @@oper_slno=@2", cp_slno, partsl, oprnsl);
+                }
+                List<Class_part_revision_history> lstrev = db.Fetch<Class_part_revision_history>(sqlrevdtls, partsl);
+                string sqlcp = @"Select * from temp_rptControlPlan order by cast(process_no as int)";
+                string sqlpart = @"Select remarks from parts where part_slno=@0";
+                string remarks = db.ExecuteScalar<string>(sqlpart, partsl);
+                List<Class_Temp_RptControlPlan> lst = db.Fetch<Class_Temp_RptControlPlan>(sqlcp);
+                List<Class_SpecialChars> lstlegend = db.Fetch<Class_SpecialChars>(sqllegend);
+                if (lst.Count > 0)
+                {
+                    int xlrowht = 75;
+                    using (ExcelPackage xlPackage = new ExcelPackage(excelFile, templateFile))
+                    {
+                        ExcelWorksheet ws = xlPackage.Workbook.Worksheets[1];
+
+                        ws.Cells[3, 1].RichText.Add("PROTOTYPE");
+                        ws.Cells[3, 2].RichText.Add("PRE-LAUNCH");
+                        ws.Cells[3, 3].RichText.Add("PRODUCTION");
+
+                        if (lst[0].cpType == "PROTOTYPE")
+                        {
+                            ws.Cells[3, 2].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                            ws.Cells[3, 3].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                            ws.Cells[3, 1].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                            ws.Cells[3, 1].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                            ws.Cells[3, 1].Style.Font.Size = 19;
+                        }
+                        else if (lst[0].cpType == "PRE-LAUNCH")
+                        {
+                            ws.Cells[3, 1].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                            ws.Cells[3, 3].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                            ws.Cells[3, 2].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                            ws.Cells[3, 2].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                            ws.Cells[3, 2].Style.Font.Size = 19;
+                        }
+                        else if (lst[0].cpType == "PRODUCTION")
+                        {
+                            ws.Cells[3, 1].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                            ws.Cells[3, 2].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                            ws.Cells[3, 3].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                            ws.Cells[3, 3].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                            ws.Cells[3, 3].Style.Font.Size = 19;
+                        }
+
+                        ws.Cells[2, 1].Value = "Control Plan Number: " + lst[0].cp_number;
+                        ws.Cells[4, 1].Value = "Part Number & Rev No: " + lst[0].mstPartNo + " / " + lst[0].partIssueNo + "-" + lst[0].partIssueDt.Replace("/", ".");
+                        ws.Cells[5, 1].Value = "Part Name / Description: " + lst[0].PartDescription;
+                        ws.Cells[5, 4].Value = "Organization / Plant Approval/ Date: ";
+                        ws.Cells[6, 1].Value = "Organization: " + lst[0].organization; //supplier 
+                        ws.Cells[2, 4].Value = "Key Contact / Phone: " + lst[0].keyContact + " / " + lst[0].keyContactPhone;
+                        ws.Cells[3, 4].Value = "Core Team: " + lst[0].CFTeamName; //core team
+                        ws.Cells[4, 4].Value = "Organization Code: " + lst[0].supplier_code; //supplier code
+                        ws.Cells[6, 4].Value = "Other Approval / Date (if Req'd): " + lst[0].otherApproval + " " + lst[0].otherApprovalDt;
+                        ws.Cells[5, 9].Value = "Process Specification: "; //process specification
+                        ws.Cells[6, 9].Value = "IH Metallurgy testing reference: " + lst[0].ih_testing_ref;
+                        ws.Cells[2, 14].Value = "Date(Original): " + lst[0].originalDt.Replace("/", ".");
+                        ws.Cells[4, 14].Value = "Customer Engineering Approval / Date (if Req'd):" + lst[0].custApprovalDt.Replace("/", ".");
+                        if (lst[0].cp_revno != null)
+                        {
+                            ws.Cells[3, 14].Value = "CP Rev No / Date: " + lst[0].cp_revno.ToString() + " / " + lst[0].cp_revdt.Replace("/", "."); //cp rev no
+                        }
+                        else
+                        {
+                            ws.Cells[3, 14].Value = "CP Rev No / Date: ";
+                        }
+
+                        ws.Cells[5, 14].Value = "Customer Quality Approval (if Req'd): " + lst[0].custQaApproval;
+                        ws.Cells[6, 14].Value = "Other Approval / Date (if Req'd): " + lst[0].otherApproval + " " + lst[0].otherApprovalDt.Replace("/", ".");
+                        //ws.Cells["10:A12"].Merge = true;
+                        ws.Cells[10, 1].Value = "Remarks:" + Environment.NewLine + remarks;
+                        int row = 9;
+
+                        string imgPath = Server.MapPath("~/Documents/");
+                        string lgndPath = Server.MapPath("~/Documents/legend/");
+                        int no = 1;
+
+                        // remove the legend based on the client
+                        int rowToDelete1 = 0, rowToDelete2 = 0, rowToDelete3 = 0, rowToDelete4 = 0;
+
+                        if (lst[0].Customer_name.ToLower().Trim() == "meritor")
+                        {
+                            rowToDelete1 = 15;
+                            rowToDelete2 = 16;
+                            rowToDelete3 = 17;
+                            rowToDelete4 = 18;
+                        }
+                        else if (lst[0].Customer_name.ToLower().Trim() == "eu meritor")
+                        {
+                            rowToDelete1 = 14;
+                            rowToDelete2 = 16;
+                            rowToDelete3 = 17;
+                            rowToDelete4 = 18;
+                        }
+                        else if (lst[0].Customer_name.ToLower().Trim() == "axle tech international")
+                        {
+                            rowToDelete1 = 14;
+                            rowToDelete2 = 15;
+                            rowToDelete3 = 17;
+                            rowToDelete4 = 18;
+                        }
+                        else if (lst[0].Customer_name.ToLower().Trim() == "volvo")
+                        {
+                            rowToDelete1 = 14;
+                            rowToDelete2 = 15;
+                            rowToDelete3 = 16;
+                            rowToDelete4 = 18;
+
+                        }
+                        else if (lst[0].Customer_name.ToLower().Trim() == "apa")
+                        {
+                            rowToDelete1 = 14;
+                            rowToDelete2 = 15;
+                            rowToDelete3 = 16;
+                            rowToDelete4 = 17;
+                        }
+                        if (rowToDelete1 > 0 && rowToDelete2 > 0 && rowToDelete3 > 0 && rowToDelete4 > 0)
+                        {
+                            ws.DeleteRow(rowToDelete4);
+                            ws.DeleteRow(rowToDelete3);
+                            ws.DeleteRow(rowToDelete2);
+                            ws.DeleteRow(rowToDelete1);
+                            ws.Cells[15, 1].Value = "Prepared By: " + lst[0].preparedBy;
+                            ws.Cells[15, 11].Value = "Approved By: " + lst[0].approvedBy;
+
+                        }
+                        else
+                        {
+                            ws.Cells[19, 1].Value = "Prepared By: " + lst[0].preparedBy;
+                            ws.Cells[19, 11].Value = "Approved By: " + lst[0].approvedBy;
+                        }
+
+                        int index = (row + (lst.Count - 1) + 5);
+                        ws.InsertRow(row + 1, lst.Count - 1);
+
+                        int i = 0;
+                        int partNumStartRow = row;
+                        int oprnstartrow = row;
+                        int oprnendrow = 0;
+
+                        // display the legend images
+
+                        if (lst[0].Customer_name.ToLower().Trim().Contains("meritor") ||
+                            lst[0].Customer_name.ToLower().Trim().Contains("axle")) // meritor and eu meritor
+                        {
+                            string lgndimg1 = "Picture1.png";
+                            string lgndpth = (lgndPath + lgndimg1);
+                            FileInfo imgFilelgnd1 = new FileInfo(lgndpth);
+                            if (imgFilelgnd1.Exists)
+                            {
+                                Bitmap image = new Bitmap(lgndpth);
+                                ExcelPicture excelPicture = ws.Drawings.AddPicture("legend1", image);
+                                ExcelRangeBase cell = ws.Cells[index - 1, 2];
+                                excelPicture.SetPosition(cell.Start.Row, 14, cell.Start.Column, 6);
+                                // excelPicture.SetSize(50, 50);
+                            }
+
+                            string lgndimg2 = "Picture2.png";
+                            string lgndpth2 = (lgndPath + lgndimg2);
+                            FileInfo imgFilelgnd2 = new FileInfo(lgndpth2);
+                            if (imgFilelgnd2.Exists)
+                            {
+                                Bitmap image = new Bitmap(lgndpth2);
+                                ExcelPicture excelPicture = ws.Drawings.AddPicture("legend2", image);
+                                ExcelRangeBase cell = ws.Cells[index - 1, 7];
+                                excelPicture.SetPosition(cell.Start.Row, 14, cell.Start.Column, 6);
+                                // excelPicture.SetSize(50, 50);
+                            }
+
+                            string lgndimg3 = "Picture3.png";
+                            string lgndpth3 = (lgndPath + lgndimg3);
+                            FileInfo imgFilelgnd3 = new FileInfo(lgndpth3);
+                            if (imgFilelgnd3.Exists)
+                            {
+                                Bitmap image = new Bitmap(lgndpth3);
+                                ExcelPicture excelPicture = ws.Drawings.AddPicture("legend3", image);
+                                ExcelRangeBase cell = ws.Cells[index - 1, 11];
+                                excelPicture.SetPosition(cell.Start.Row, 14, cell.Start.Column, 6);
+                                // excelPicture.SetSize(50, 50);
+                            }
+
+                            string lgndimg4 = "Picture4.png";
+                            string lgndpth4 = (lgndPath + lgndimg4);
+                            FileInfo imgFilelgnd4 = new FileInfo(lgndpth4);
+                            if (imgFilelgnd4.Exists)
+                            {
+                                Bitmap image = new Bitmap(lgndpth4);
+                                ExcelPicture excelPicture = ws.Drawings.AddPicture("legend4", image);
+                                ExcelRangeBase cell = ws.Cells[index - 1, 15];
+                                excelPicture.SetPosition(cell.Start.Row, 14, cell.Start.Column, 6);
+                                // excelPicture.SetSize(50, 50);
+                            }
+                        }
+                        else if (lst[0].Customer_name.ToLower().Trim().Contains("volvo") ||
+                            lst[0].Customer_name.ToLower().Trim().Contains("apa"))
+                        {
+                            string lgndimg3 = "Picture3.png";
+                            string lgndpth3 = (lgndPath + lgndimg3);
+                            FileInfo imgFilelgnd3 = new FileInfo(lgndpth3);
+                            if (imgFilelgnd3.Exists)
+                            {
+                                Bitmap image = new Bitmap(lgndpth3);
+                                ExcelPicture excelPicture = ws.Drawings.AddPicture("legend3", image);
+                                ExcelRangeBase cell = ws.Cells[index - 1, 11];
+                                excelPicture.SetPosition(cell.Start.Row, 14, cell.Start.Column, 6);
+                                // excelPicture.SetSize(50, 50);
+                            }
+
+                            string lgndimg4 = "Picture4.png";
+                            string lgndpth4 = (lgndPath + lgndimg4);
+                            FileInfo imgFilelgnd4 = new FileInfo(lgndpth4);
+                            if (imgFilelgnd4.Exists)
+                            {
+                                Bitmap image = new Bitmap(lgndpth4);
+                                ExcelPicture excelPicture = ws.Drawings.AddPicture("legend4", image);
+                                ExcelRangeBase cell = ws.Cells[index - 1, 15];
+                                excelPicture.SetPosition(cell.Start.Row, 14, cell.Start.Column, 6);
+                                // excelPicture.SetSize(50, 50);
+                            }
+                        }
+                        int rwstart = 0;
+                        int rwfreqstart = 0;
+                        int rwfreq1start = 0;
+                        int flag = 0;
+                        int flagfreq = 0;
+                        int flagfreq1 = 0;
+
+
+                        while (i <= lst.Count - 1)
+                        {
+                            string op = lst[i].OperationDesc;
+                            int rowmerge = 0;
+                            no = 1;
+                            oprnstartrow = row;
+                            string sqlmachinecode = @"select machinecode from machines where machine_slno=@0";
+                            string mach = db.ExecuteScalar<string>(sqlmachinecode, lst[i].machine_slno);
+                            ws.Cells[row, 1].Value = lst[i].process_no;//process number
+                            ws.Cells[row, 2].Value = lst[i].OperationDesc;
+                            if (mach == null || mach == "" || mach == "-")
+                                ws.Cells[row, 3].Value = lst[i].MachineDesc;
+                            else
+                                ws.Cells[row, 3].Value = lst[i].MachineDesc + " / " + mach;
+                            string pdtchar = string.Empty;
+                            string prcchar = string.Empty;
+                            while (op == lst[i].OperationDesc)
+                            {
+                                Class_Temp_RptControlPlan c = lst[i];
+                                pdtchar = c.product_char;
+                                prcchar = c.process_char;
+                                ws.Cells[row, 4].Value = c.dimn_no;
+                                ws.Cells[row, 4].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                                ws.Cells[row, 5].Value = c.product_char;
+
+                                //ws.Cells[row, 6, row, 7].Merge = false;
+                                //ws.Cells[row, 6, row, 7].Merge = true;
+
+                                ws.Cells[row, 6].Value = c.process_char;
+
+                                if (c.splChar_slno > 0)
+                                {
+                                    string img = GetFileName(c.splChar_slno.ToString());
+                                    string pth = (imgPath + img);
+                                    FileInfo imgFile = new FileInfo(pth);
+                                    if (imgFile.Exists)
+                                    {
+                                        imgno += 1;
+                                        Bitmap image = new Bitmap(pth);
+                                        ExcelPicture excelPicture = ws.Drawings.AddPicture("PictureName" + imgno, image);
+                                        ExcelRangeBase cell = ws.Cells[row - 1, 7];
+
+                                        excelPicture.SetPosition(cell.Start.Row, 20, cell.Start.Column, 7);
+                                        excelPicture.SetSize(50, 50);
+
+                                    }
+                                }
+                                ws.Cells[row, 8].Value = string.Empty; //special characteristics 
+                                ws.Cells[row, 9].Value = c.spec1;
+                                ws.Cells[row, 10].Value = c.measurementTech;
+                                ws.Cells[row, 11].Value = c.sampleSize;
+                                ws.Cells[row, 12].Value = c.sampleFreq;
+
+
+                                // Merge columns sample size and freq if any one is empty
+                                if (!string.IsNullOrEmpty(c.sampleSize) && !string.IsNullOrWhiteSpace(c.sampleFreq))
+                                {
+                                    ws.Cells[row, 11].Value = c.sampleSize;
+                                    ws.Cells[row, 12].Value = c.sampleFreq;
+                                }
+                                else
+                                {
+                                    // ws.Cells[row, 11, row, 12].Merge = true;
+                                    if (!string.IsNullOrWhiteSpace(c.sampleSize))
+                                    {
+                                        ws.Cells[row, 11].Value = c.sampleSize;
+                                    }
+                                    else
+                                    {
+                                        ws.Cells[row, 11].Value = c.sampleFreq;
+                                    }
+                                }
+                                if (!string.IsNullOrEmpty(lst[i].sampleFreq))
+                                {
+                                    if (lst[i].sampleFreq.ToLower().Contains("every setting") || lst[i].sampleFreq.ToLower().Contains(" setting"))
+                                    { rwfreq1start = row; flagfreq1 = 1; }
+                                }
+                                ws.Cells[row, 13].Value = c.methodDesc;
+                                ws.Cells[row, 14].Value = c.measurementTech2;
+                                ws.Cells[row, 15].Value = c.sampleSize2;
+                                ws.Cells[row, 16].Value = c.sampleFreq2;
+
+                                // Merge columns sample size and freq if any one is empty
+                                if (!string.IsNullOrEmpty(c.sampleSize2) && !string.IsNullOrWhiteSpace(c.sampleFreq2))
+                                {
+                                    ws.Cells[row, 15].Value = c.sampleSize2;
+                                    ws.Cells[row, 16].Value = c.sampleFreq2;
+                                }
+                                else
+                                {
+                                    //ws.Cells[row, 15, row, 16].Merge = true;
+                                    if (!string.IsNullOrWhiteSpace(c.sampleSize2))
+                                    {
+                                        ws.Cells[row, 15].Value = c.sampleSize2;
+
+                                    }
+                                    //else
+                                    //{
+                                    //    ws.Cells[row, 16].Value = c.sampleFreq2;
+                                    //    if (i == 0) {
+                                    //        if (c.sampleFreq2.Contains("Every Setting"))
+                                    //        {
+                                    //            flagfreq = 1;
+                                    //        }
+
+                                    //    }
+
+                                    //}
+                                }
+
+                                ws.Cells[row, 16].Value = c.sampleFreq2;
+
+                                if (!string.IsNullOrEmpty(lst[i].sampleFreq2))
+                                {
+                                    if (lst[i].sampleFreq2.ToLower().Contains("every setting") || lst[i].sampleFreq2.ToLower().Contains(" setting"))
+                                    { rwfreqstart = row; flagfreq = 1; }
+                                }
+
+
+                                ws.Cells[row, 17].Value = c.methodDesc2;
+                                if (c.product_char == "Material Test")
+                                {
+                                    ws.Cells[row, 18].Merge = false;
+                                    ws.Cells[row, 18, row + 1, 18].Merge = true;
+                                    ws.Cells[row, 18].Value = c.reactionPlan;
+                                    ws.Cells[row, 18, row + 1, 18].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Top;
+                                }
+                                else if (c.product_char.Contains("Refer Supplier Report"))
+                                {
+                                    ws.Cells[row, 18].Merge = false;
+                                    ws.Cells[row, 18, row, 18].Merge = true;
+                                    ws.Cells[row, 18].Value = c.reactionPlan;
+                                    ws.Cells[row, 18, row + 1, 18].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Top;
+                                }
+                                else
+                                {
+                                    ws.Cells[row, 18].Value = c.reactionPlan;
+                                }
+
+
+                                // if only prod char or proc char exists then merge the rest of columns
+                                if (!string.IsNullOrWhiteSpace(pdtchar) || !string.IsNullOrWhiteSpace(prcchar))
+                                {
+                                    // Get the columns I and Q as their column indexes
+                                    int columnI = 8; // Column "H" is the 8th column (index starts from 1)
+                                    int columnQ = 17; // Column "Q" is the 17th column
+
+                                    if (string.IsNullOrWhiteSpace(prcchar))
+                                    {
+                                        columnI = 6;
+                                    }
+
+                                    // Check if any cell has a value between columns I and Q (inclusive)
+                                    bool hasValue = false;
+                                    for (int col = columnI; col <= columnQ; col++)
+                                    {
+                                        if (ws.Cells[row, col].Value != null && !string.IsNullOrWhiteSpace(ws.Cells[row, col].Text))
+                                        {
+                                            hasValue = true;
+                                            break;
+                                        }
+                                    }
+                                    // If no cell has a value, merge the columns I to Q
+                                    if (!hasValue)
+                                    {
+                                        var range = ws.Cells[row, columnI, row, columnQ];
+                                        range.Merge = false;
+                                        range.Merge = true;
+                                    }
+                                    else
+                                    {
+
+                                        if (!string.IsNullOrWhiteSpace(lst[i].process_char))
+                                        {
+                                            if (lst[i].process_char.ToLower().Contains("ref sop") || lst[i].process_char.ToLower().Contains(" sop") || lst[i].process_char.ToLower().Contains("refer sop")) { rwstart = row; flag = 1; }
+                                            else
+                                            {
+                                                string celladr2 = "F" + row + ":" + "G" + row;
+                                                ws.Select(celladr2);
+                                                ws.SelectedRange.Merge = false;
+                                                ws.SelectedRange.Merge = true;
+                                            }
+                                        }
+
+
+                                    }
+                                }
+
+                                else
+                                {
+                                    string celladr = "E" + row + ":" + "Q" + row;
+                                    ws.Select(celladr);
+                                    ws.SelectedRange.Merge = false;
+                                    ws.SelectedRange.Merge = true;
+
+                                }
+
+                                if (string.IsNullOrWhiteSpace(ws.Cells[row, 6].Text) && ws.Cells[row, 6, row, 17].Merge == false && ws.Cells[row, 6, row, 7].Merge == false && flag != 1)
+                                {
+                                    string celladr2 = "F" + row + ":" + "G" + row;
+                                    ws.Select(celladr2);
+                                    ws.SelectedRange.Merge = false;
+                                    ws.SelectedRange.Merge = true;
+                                }
+                                // merge the cells for other columns
+                                ws.Cells[row, 11].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                                ws.Cells[row, 13].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                                ws.Cells[row, 14].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                                ws.Cells[row, 15].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                                ws.Cells[row, 16].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+
+                                ws.Cells[row, 17].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+
+                                // Vertical middle the columns
+                                ws.Cells[row, 4, row, 17].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                                ws.Cells[row, 5, row, 17].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                                row += 1;
+
+                                ws.Row(row).Height = xlrowht;
+                                no++;
+                                i++;
+                                if (i == lst.Count) break;
+                            }
+
+                            // when operation changes, merge the required columns
+                            oprnendrow = row - 1;
+                            ws.Cells[oprnstartrow, 1, oprnendrow, 1].Merge = true;
+                            ws.Cells[oprnstartrow, 2, oprnendrow, 2].Merge = true;
+                            ws.Cells[oprnstartrow, 3, oprnendrow, 3].Merge = true;
+
+
+                            if (flag == 1)
+                                ws.Cells[rwstart, 6, oprnendrow, 7].Merge = true;
+                            if (flagfreq == 1)
+                                ws.Cells[rwfreqstart, 16, oprnendrow, 16].Merge = true;
+                            if (flagfreq1 == 1)
+                                ws.Cells[rwfreq1start, 12, oprnendrow, 12].Merge = true;
+                            rwstart = 0;
+                            rwfreqstart = 0;
+                            rwfreq1start = 0;
+                            flagfreq = 0;
+                            flag = 0;
+                            flagfreq1 = 0;
+
+                            ws.Cells[oprnstartrow, 1, oprnendrow, 1].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Top;
+                            ws.Cells[oprnstartrow, 2, oprnendrow, 2].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Top;
+                            ws.Cells[oprnstartrow, 3, oprnendrow, 3].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Top;
+                            ws.Cells[oprnstartrow, 6, oprnendrow, 6].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                            ws.Cells[oprnstartrow, 16, oprnendrow, 16].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+
+                            ws.Cells[oprnstartrow, 1, oprnendrow, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                            ws.Cells[oprnstartrow, 2, oprnendrow, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                            ws.Cells[oprnstartrow, 3, oprnendrow, 3].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                            ws.Cells[oprnstartrow, 6, oprnendrow, 6].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                            ws.Cells[oprnstartrow, 16, oprnendrow, 16].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                            if (!op.ToLower().Contains("receiving inspection"))
+                            {
+                                if (!pdtchar.ToLower().Contains("material characteristics") &&
+                                   !pdtchar.ToLower().Contains("dimensional characteristics") &&
+                                   !pdtchar.ToLower().Contains("vendor control plan"))
+                                {
+                                    ws.Cells[oprnstartrow, 18, oprnendrow, 18].Merge = true;
+                                }
+                                else
+                                {
+                                    // 
+                                }
+
+                                // align the merged cells to the top
+
+                                ws.Cells[oprnstartrow, 18, oprnendrow, 18].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Top;
+
+                            }
+
+                            if (i == lst.Count) break;
+                        }
+                        endrow = row - 1;
+
+                        int revindex = 16 + lst.Count + 5;
+                        int revstart = revindex;
+
+                        if (lstrev.Count > 0)
+                        {
+                            foreach (Class_part_revision_history c in lstrev)
+                            {
+                                ws.Row(revindex).Height = xlrowht;
+                                ws.Cells[revindex, 1].Value = c.rev_no;
+                                ws.Cells[revindex, 2].Value = c.rev_date;
+                                ws.Cells[revindex, 3].Value = c.change_nature;
+                                ws.Cells[revindex, 3, revindex, 10].Merge = true;
+
+                                ws.Cells[revindex, 11].Value = c.rev_reasons;
+                                ws.Cells[revindex, 11, revindex, 18].Merge = true;
+                                ws.Cells[revindex, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                                ws.Cells[revindex, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                                ws.Cells[revindex, 1].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                                ws.Cells[revindex, 2].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                                ws.Cells[revindex, 3].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                                ws.Cells[revindex, 11].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                                revindex += 1;
+                            }
+                            ws.DeleteRow(16 + lst.Count + 1);
+                            ws.DeleteRow(16 + lst.Count + 1);
+                            ws.DeleteRow(16 + lst.Count + 1);
+                            ws.DeleteRow(16 + lst.Count + 1);
+                            // ws.Cells[revstart, 1, revstart, 11].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Bottom;
+                        }
+                        int newRowCount = ws.Dimension.End.Row - (ws.Dimension.End.Row - revindex);
+                        int currentEndRow = newRowCount;
+                        ws.PrinterSettings.Orientation = eOrientation.Landscape;
+                        ws.PrinterSettings.PrintArea = ws.Cells["A1:R" + (currentEndRow - 5)];
+
+                        var newrange = ws.Cells["A1:R" + currentEndRow];
+                        var border = newrange.Style.Border;
+                        // Set border style and color for all sides of the cells
+                        border.Top.Style = border.Right.Style = border.Bottom.Style = border.Left.Style = ExcelBorderStyle.Thin;
+                        border.Top.Color.SetColor(System.Drawing.Color.Black);
+                        border.Right.Color.SetColor(System.Drawing.Color.Black);
+                        border.Bottom.Color.SetColor(System.Drawing.Color.Black);
+                        border.Left.Color.SetColor(System.Drawing.Color.Black);
+                        //newrange.Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                        newrange.Style.WrapText = true;
+                        // Logic to merge Product starts here
+                        int flagforproduct = 0;
+                        row = partNumStartRow;
+                        oprnstartrow = row;
+                        oprnendrow = 0;
+                        i = 0;
+                        while (i < lst.Count - 1)
+                        {
+                            string op = lst[i].OperationDesc;
+                            int rowmerge = 0;
+                            int rwstart1 = 0;
+                            int rwend = 0;
+                            oprnstartrow = row;
+                            //  string prev_pdtchar = string.Empty;
+                            while (op == lst[i].OperationDesc)
+                            {
+                                Class_Temp_RptControlPlan c = lst[i];
+                                string pdtchar = c.product_char;
+                                if (row >= oprnstartrow)
+                                {
+                                    if (c.product_char == null || c.product_char == "-" || c.product_char == string.Empty)
+                                    {
+                                        if (flagforproduct == 0) { rwstart1 = row; }
+                                        flagforproduct = 1;
+                                        rwend = row;
+                                    }
+                                    else
+                                    {
+                                        if (flagforproduct == 1 && rwstart1!=0 && rwend!=0)
+                                        {
+                                            ws.Cells[rwstart1, 5, rwend, 5].Merge = true;
+                                            flagforproduct = 0;
+                                        }
+                                    }
+                                }
+                                row += 1;
+                                i++;
+                                if (i == lst.Count) break;
+                            }
+                            oprnendrow = row - 1;
+                        }
+
+
+                        // Logic to merge Product ends here
+
+                        xlPackage.SaveAs(excelFile);
+
+                        // reopen the file to adjust the row height
+                        //  SetCellValuesAndAdjustRowHeight(excelFile.ToString(), startRow, endrow, revstart, revindex - 1);
+
+                        // using syncfusion.xlsio to autofit rows
+                        string filePath = excelFile.ToString();
+                        string worksheetName = "Sheet1";
+                        int startColumn = 1;
+                        int endColumn = 17;
+                        startRow += 1;
+
+                        AutofitRowHeight(filePath, worksheetName, startRow, endrow, startColumn, endColumn);
+
+
+                        string pdfname = fname.Replace(".xlsx", ".pdf");
+                        var ret = ConvertXlstoPdf(fname, pdfname);
+                        return pdfname;
+                    }
+                }
+
+                return "";
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(" Error in generating control plan: " + ex.ToString());
+            return JsonConvert.SerializeObject(new { Message = ex.Message });
+        }
+    }
+
+    private void AutofitRowHeight(string filePath, string worksheetName, int startRow, int endRow, int startColumn, int endColumn)
+    {
+        using (ExcelEngine excelEngine = new ExcelEngine())
+        {
+            IApplication application = excelEngine.Excel;
+            IWorkbook workbook = application.Workbooks.Open(filePath);
+            IWorksheet worksheet = workbook.Worksheets[worksheetName];
+
+            for (int row = startRow; row <= endRow; row++)
+            {
+                worksheet.AutofitRow(row);
+            }
+
+            workbook.Save();
+            int defaultRowHt = 75;
+
+            for (int row = startRow; row <= endRow; row++)
+            {
+                double currentRowHt = worksheet.GetRowHeight(row);
+                if (currentRowHt < Convert.ToDouble(defaultRowHt))
+                {
+                    worksheet.SetRowHeight(row, defaultRowHt);
+                }
+
+            }
+
+            bool isProtectWindow = true;
+            bool isProtectContent = true;
+            // Read the password from web.config
+            string password = ConfigurationManager.AppSettings["xlpwd"];
+
+
+
+            //Protect Workbook
+            workbook.Protect(isProtectWindow, isProtectContent, password);
+
+
+
+            //Protecting the Worksheet by using a Password
+            worksheet.Protect(password, Syncfusion.XlsIO.ExcelSheetProtection.All);
+            workbook.Save();
+            
+        }
+    }
+    string GetFileName(string imgSlNo)
+    {
+        string sql = @"select splCharFile from SpecialChars where splchar_slno=" + imgSlNo;
+        using (Database db = new Database("connString"))
+        {
+            string imgnm = db.ExecuteScalar<string>(sql);
+            return imgnm;
+        }
+    }
+    protected int Pixel2MTU(int pixels)
+    {
+        int mtus = pixels * 9525;
+        return mtus;
+    }
+    protected void addimage(string imagename, int rowindex, int colindex, ExcelWorksheet ws, string pic)
+    {
+        string path = HttpContext.Current.Server.MapPath("~/Documents/" + imagename);
+        System.Drawing.Image logo = System.Drawing.Image.FromFile(path);
+        var picture = ws.Drawings.AddPicture(pic, logo);
+        picture.From.Column = colindex;
+        picture.From.Row = rowindex - 1;
+        picture.SetSize(50, 50);
+        picture.From.ColumnOff = Pixel2MTU(2);
+        picture.From.RowOff = Pixel2MTU(10);
+    }
+    protected void addimagePDI(string imagename, int rowindex, int colindex, ExcelWorksheet ws, string pic)
+    {
+        string path = HttpContext.Current.Server.MapPath("~/Documents/" + imagename);
+        System.Drawing.Image logo = System.Drawing.Image.FromFile(path);
+        var picture = ws.Drawings.AddPicture(pic, logo);
+        picture.From.Column = colindex;
+        picture.From.Row = rowindex - 1;
+        picture.SetSize(40, 40);
+        picture.From.ColumnOff = Pixel2MTU(10);
+        picture.From.RowOff = Pixel2MTU(2);
+        if (imagename == "pdicheck.png")
+        {
+            picture.SetSize(80, 40);
+            picture.From.ColumnOff = Pixel2MTU(20);
+            picture.From.RowOff = Pixel2MTU(7);
+        }
+    }
+    protected void addimagePCC(string imagename, int rowindex, int colindex, ExcelWorksheet ws, string pic)
+    {
+        string path = HttpContext.Current.Server.MapPath("~/Documents/" + imagename);
+        System.Drawing.Image logo = System.Drawing.Image.FromFile(path);
+        var picture = ws.Drawings.AddPicture(pic, logo);
+        picture.From.Column = colindex;
+        picture.From.Row = rowindex - 2;
+        picture.SetSize(50, 50);
+        picture.From.ColumnOff = Pixel2MTU(2);
+        picture.From.RowOff = Pixel2MTU(10);
+    }
+   
+
+    [WebMethod]
+    public string GenerateDoc(int partsl, int oprnsl)
+    {
+        int imgno = 0;
+        try
+        {
+            string fname = "doc_" + partsl + "_" + oprnsl + ".xlsx";
+            string filepath = "~/pdftemp/" + fname;
+            FileInfo excelFile = new FileInfo(Server.MapPath(filepath));
+            //FileInfo templateFile = new FileInfo(Server.MapPath("~/App_Data/DocAudit.xlsx"));
+            FileInfo templateFile = new FileInfo(Server.MapPath("~/App_Data/DockAuditReport.xlsx"));
+            string sql = @"SELECT  c.cp_slno FROM controlplan c where c.rev_no =(SELECT MAX(p.rev_no ) from controlplan p WHERE " +
+            "p.Submitstatus='A' and p.Obsolete='N' AND c.part_slno=p.part_slno and c.operation_slno=p.operation_slno AND c.machine_slno=p.machine_slno ) and c.part_slno=" + partsl + " and c.operation_slno= " + oprnsl + "";
+            string sqlrevdtls = @"SELECT rev_no, rev_date, rev_reason FROM controlplan c
+              where c.part_slno =" + partsl + " and c.operation_slno= " + oprnsl + "";
+            Logger.LogError(sql);
+            string cp_slno = string.Empty;
+            using (Database db = new Database("connString"))
+            {
+                cp_slno = db.ExecuteScalar<string>(sql);
+                db.Execute(";exec SP_Temp_RptControlPlan @@cp_slno=@0,@@part_slno=@1, @@oper_slno=@2", cp_slno, partsl, oprnsl);
+                List<Class_ControlPlan> lstrev = db.Fetch<Class_ControlPlan>(sqlrevdtls);
+                string sqlcp = @"Select * from temp_rptControlPlan";
+                List<Class_Temp_RptControlPlan> lst = db.Fetch<Class_Temp_RptControlPlan>(sqlcp);
+                if (lst.Count > 0)
+                {
+                    double xlrowht = 90;
+                    using (ExcelPackage xlPackage = new ExcelPackage(excelFile, templateFile))
+                    {
+                        ExcelWorksheet ws = xlPackage.Workbook.Worksheets[1];
+                        ws.Cells[1, 1].Value = ws.Cells[1, 1].Value + " - " + lst[0].PartDescription;
+
+                        ws.Cells[2, 1].Value = ws.Cells[2, 1].Value + " " + lst[0].PartDescription;
+                        ws.Cells[2, 4].Value = ws.Cells[2, 4].Value + " ";
+                        ws.Cells[2, 7].Value = ws.Cells[2, 7].Value + " ";
+                        ws.Cells[2, 9].Value ="Customer Name:" + lst[0].Customer_name;
+                        ws.Cells[3, 1].Value = ws.Cells[3, 1].Value + " " + lst[0].mstPartNo + " - " + lst[0].partIssueNo + " / " + lst[0].partIssueDt.Replace('/', '.');
+                        ws.Cells[3, 4].Value = ws.Cells[3, 4].Value + " ";
+                        ws.Cells[3, 7].Value = ws.Cells[3, 7].Value + " ";
+                        ws.Cells[3, 10].Value = ws.Cells[3, 10].Value + " ";
+
+                      //  ws.Cells[4, 1].Value = ws.Cells[4, 1].Value + " " + lst[0].mstPartNo + " - " + lst[0].partIssueNo + " / " + lst[0].partIssueDt.Replace('/', '.');
+                       // ws.Cells[4, 4].Value = ws.Cells[4, 4].Value + " ";
+                       // ws.Cells[4, 7].Value = ws.Cells[4, 7].Value + " ";
+                        //ws.Cells[4, 10].Value = ws.Cells[4, 10].Value + " ";
+
+                        int endrow = 6+ lst.Count;
+                        ws.InsertRow(6, lst.Count);
+                        int index = 6 + lst.Count + 2;
+                        int row = 6;
+                        int startRow = 5;
+                        string imgPath = Server.MapPath("~/Documents/");
+                        int serial_no = 1;
+                        ws.Cells[index, 1].Value = "Inspected By: ";
+                        ws.Cells[index, 8].Value = "Approved By: ";
+                        foreach (Class_Temp_RptControlPlan c in lst)
+                        {
+                            ws.Cells[startRow + ":" + startRow].Copy(ws.Cells[row + ":" + row]);
+                            ws.Cells[row, 1].Value = serial_no;
+                            ws.Cells[row, 2].Value = c.product_char;
+                            if (c.splChar_slno > 0)
+                            {
+                                string img = GetFileName(c.splChar_slno.ToString());
+                                string pth = (imgPath + img);
+                                FileInfo imgFile = new FileInfo(pth);
+                                if (imgFile.Exists)
+                                {
+                                    imgno += 1;
+                                    Bitmap image = new Bitmap(pth);
+                                    ExcelPicture excelPicture = ws.Drawings.AddPicture("PictureName" + imgno, image);
+                                    ExcelRangeBase cell = ws.Cells[row - 2, 2];
+                                    if (row == 7)
+                                    {
+                                        excelPicture.SetPosition(cell.Start.Row, 18, cell.Start.Column, 12);
+                                        excelPicture.SetSize(46, 46);
+                                    }
+                                    else
+                                    {
+                                        excelPicture.SetPosition(cell.Start.Row, 28, cell.Start.Column, 13);
+                                        excelPicture.SetSize(50, 50);
+                                    }
+                                }
+                            }
+                            ws.Cells[row, 4].Value = c.spec1;
+                            ws.Cells[row, 5].Value = c.measurementTech;
+                            ws.Cells[row, 6].Value = c.sampleSize + " " +c.sampleFreq;
+                            string[] cp = c.cp_number.Split('/');
+                            ws.Cells[4 + lst.Count + 5, 1].Value = "F/Q/012 - Rev : 0";
+                            ws.Cells[4 + lst.Count + 5, 8].Value = cp[1] +  cp[2]+" / " + c.process_no + "/DAR - Rev No:0";
+                            ws.Row(row).Height = xlrowht;
+                            ws.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                            ws.Cells[row, 2].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                            ws.Cells[row, 4].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                            ws.Cells[row, 4].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                            ws.Cells[row, 5].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                            ws.Cells[row, 5].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                            //// ---------- added to set the row height
+                            //// Find the cell with the maximum content length
+                            //ExcelRangeBase cellWithMaxContent = FindCellWithMaxContent(row, ws);
+
+                            //// Calculate the required row height based on the cell content
+                            //int requiredRowHeight = GetRequiredRowHeight(ws, cellWithMaxContent);
+
+                            //// Set the row height to the calculated required height (if it's greater than the default height)
+                            //int finalRowHeight = (int)Math.Max(ws.DefaultRowHeight, requiredRowHeight);
+                            //ws.Row(cellWithMaxContent.Start.Row).Height = finalRowHeight;
+                            //// ---------------
+                            row += 1;
+                            serial_no++;
+                        }
+
+                        ws.DeleteRow(5);
+                       int revindex = 5 + lst.Count + 7;
+                        //if (lstrev.Count > 0)
+                        //{
+
+                        //    foreach (Class_ControlPlan c in lstrev)
+                        //    {
+                        //        ws.Cells[revindex, 1].Value = c.rev_no;
+                        //        ws.Cells[revindex, 2].Value = c.rev_date;
+                        //        ws.Cells[revindex, 3].Value = c.rev_reason;
+                        //        revindex += 1;
+                        //    }
+                        //}
+
+                        // set the print area
+                        int newRowCount = revindex;
+                        //int currentEndRow = ws.Dimension.End.Row;
+                        int currentEndRow = newRowCount;
+                        ws.PrinterSettings.Orientation = eOrientation.Landscape;
+                        ws.PrinterSettings.PrintArea = ws.Cells["A1:T" + (currentEndRow)];
+                        xlPackage.SaveAs(excelFile);
+                        // using syncfusion.xlsio to autofit rows
+                        string filePath = excelFile.ToString();
+                        string worksheetName = "Sheet1";
+                        int startColumn = 1;
+                        int endColumn = 12;
+                        startRow = 7;
+
+                       AutofitRowHeight(filePath, worksheetName, startRow, endrow, startColumn, endColumn);
+
+                        string pdfname = fname.Replace(".xlsx", ".pdf");
+                        var ret = ConvertXlstoPdf(fname, pdfname);
+                        return pdfname;
+                    }
+                }
+                return "";
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(" Error in generating control plan: " + ex.ToString());
+            return JsonConvert.SerializeObject(new { Message = ex.Message });
+        }
+    }
+    [WebMethod]
+    public string GeneratePDISummary(int partsl, int oprnsl)
+    {
+        int imgno = 0;
+        try
+        {
+            string fname = "PDI_" + partsl + "_" + oprnsl + ".xlsx";
+            string filepath = "~/pdftemp/" + fname;
+            FileInfo excelFile = new FileInfo(Server.MapPath(filepath));
+            FileInfo templateFile = new FileInfo(Server.MapPath("~/App_Data/PDI_Summary.xlsx"));
+            string sqllegend = @"select distinct Top 4 sp.splCharFile,spl_char_desc FROM[SpecialChars] sp inner join[mei_controlplan].[dbo].[customers] c on
+                                c.cust_slno = sp.cust_slno inner join parts p on p.Customer_name = c.cust_name
+                                inner join ControlPlan cp on cp.part_slno = p.part_slno
+                                where cp.part_slno =" + partsl + " and cp.operation_slno =" + oprnsl + " and sp.show_in_legend = 1";
+            string sql = @"SELECT  c.cp_slno FROM controlplan c where c.rev_no =(SELECT MAX(p.rev_no ) from controlplan p WHERE " +
+            "p.Submitstatus='A' and p.Obsolete='N' AND c.part_slno=p.part_slno and c.operation_slno=p.operation_slno AND c.machine_slno=p.machine_slno ) and c.part_slno=" + partsl + " and c.operation_slno= " + oprnsl + "";
+            Logger.LogError(sql);
+            string cp_slno = string.Empty;
+            using (Database db = new Database("connString"))
+            {
+                List<Class_SpecialChars> lstlegend = db.Fetch<Class_SpecialChars>(sqllegend);
+                cp_slno = db.ExecuteScalar<string>(sql);
+                db.Execute(";exec SP_Temp_RptControlPlan @@cp_slno=@0,@@part_slno=@1, @@oper_slno=@2", cp_slno, partsl, oprnsl);
+                string sqlcp = @"Select * from temp_rptControlPlan";
+                List<Class_Temp_RptControlPlan> lst = db.Fetch<Class_Temp_RptControlPlan>(sqlcp);
+                if (lst.Count > 0)
+                {
+                    double xlrowht = 90;
+                    using (ExcelPackage xlPackage = new ExcelPackage(excelFile, templateFile))
+                    {
+                        ExcelWorksheet ws = xlPackage.Workbook.Worksheets[1];
+                        ws.Cells[2, 1].Value = "Part Name:" + lst[0].PartDescription;
+                        ws.Cells[2, 3].Value = "Part No:" + lst[0].mstPartNo + " - " + lst[0].partIssueNo + " / " + lst[0].partIssueDt.Replace('/', '.');
+                        ws.Cells[2, 5].Value = "Customer Name:" + lst[0].Customer_name;
+                       
+
+                        int row = 7;
+                        ws.InsertRow(7, lst.Count);
+                        int startRows = 6;
+                        string imgPath = Server.MapPath("~/Documents/");
+                        int serial_no = 1;
+                        int index = (row + (lst.Count) + 2);
+                        int legendcount = lstlegend.Count;
+                        if (lstlegend.Count > 0)
+                        {
+                            if (!string.IsNullOrWhiteSpace(lstlegend[0].splCharFile))
+                            {
+                                addimagePDI(lstlegend[0].splCharFile, index-2, 4, ws, "0");
+                               // ws.Cells[index, 5].Value = " QCC - Quality Control Characteristic";
+                            }
+                            if (lstlegend.Count > 1)
+                            {
+                                if (!string.IsNullOrWhiteSpace(lstlegend[1].splCharFile))
+                                {
+                                    addimagePDI(lstlegend[1].splCharFile, index-2, 8, ws, "1");
+                                   // ws.Cells[index, 8].Value = " SRC - Safety Related Characteristic";
+                                }
+                            }
+
+                        }
+                        foreach (Class_Temp_RptControlPlan c in lst)
+                        {
+                            ws.Cells[startRows + ":" + startRows].Copy(ws.Cells[row + ":" + row]);
+                            ws.Cells[row, 1].Value = serial_no;
+                            ws.Cells[row, 2].Value = c.product_char;
+                            ws.Row(row).Height = 50;
+                            if (c.splChar_slno > 0)
+                            {
+                                string img = GetFileName(c.splChar_slno.ToString());
+                                string pth = (imgPath + img);
+                                FileInfo imgFile = new FileInfo(pth);
+                                if (imgFile.Exists)
+                                {
+                                    imgno += 1;
+                                    Bitmap image = new Bitmap(pth);
+                                    ExcelPicture excelPicture = ws.Drawings.AddPicture("PictureName" + imgno, image);
+                                    ExcelRangeBase cell = ws.Cells[row - 1, 2];
+                                    excelPicture.SetPosition(cell.Start.Row, 10, cell.Start.Column, 13);
+                                    excelPicture.SetSize(40, 40);
+                                }
+                            }
+                            ws.Cells[row, 4].Value = c.spec1;
+                            ws.Cells[row, 6].Value = c.sampleFreq2;
+                            if (c.PDI_type == "Variable")
+                            {
+                                ws.Cells[row, 9].Value = string.Empty;
+                                ws.Cells[row, 10].Value = string.Empty;
+                                ws.Cells[row, 11].Value ="N/A";
+                                ws.Cells[row, 11].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                                ws.Cells[row, 11].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                            }
+                            else if (c.PDI_type == "Attribute")
+                            {
+                                ws.Cells[row, 9].Value = "N/A";
+                                ws.Cells[row, 10].Value = "N/A"; 
+                                ws.Cells[row, 11].Value = string.Empty;
+                                ws.Cells[row, 9].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                                ws.Cells[row, 10].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                                ws.Cells[row, 9].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                                ws.Cells[row, 10].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                            }
+                            ws.Cells[row, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                            ws.Cells[row, 1].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                            ws.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                            ws.Cells[row, 2].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                            ws.Cells[row, 2].Style.WrapText = true;
+                            ws.Cells[row, 4].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                            ws.Cells[row, 4].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                            ws.Cells[row, 4].Style.WrapText = true;
+
+                            //ws.Row(row).Height = xlrowht;
+                            // ---------- added to set the row height
+                            //// Find the cell with the maximum content length
+                            //ExcelRangeBase cellWithMaxContent = FindCellWithMaxContentPCC(row, ws,"PDI");
+
+
+                            //// Calculate the required row height based on the cell content
+                            //int requiredRowHeight = GetRequiredRowHeight(ws, cellWithMaxContent);
+
+                            //// Set the row height to the calculated required height (if it's greater than the default height)
+                            //int finalRowHeight = (int)Math.Max(ws.DefaultRowHeight, requiredRowHeight);
+                            //ws.Row(cellWithMaxContent.Start.Row).Height = finalRowHeight;
+                            // ---------------
+                            row += 1;
+                            serial_no++;
+                            //ws.Cells["A6:L" + row].Style.Border.Right.Style = ExcelBorderStyle.Thin;
+                            //ws.Cells["A6:L" + row].Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
+                            //ws.Cells["A6:L" + row].Style.Border.Left.Style = ExcelBorderStyle.Thin;
+                        }
+                        ws.DeleteRow(6);
+                        ws.DeleteRow(row-1);
+                       addimagePDI("pdicheck.png", row+1, 3, ws, "2");
+                        string[] cp = lst[0].cp_number.Split('/');
+                        ws.Cells[row+4, 10].Value = cp[1] + cp[2] + " / " + lst[0].process_no + "/PDS - Rev No:0";
+                        ws.Cells["A"+row].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+
+                       // ws.Cells[5+ lst.Count - 1, 6].Value = lst[0].approvedBy;
+                        int currentEndRow = ws.Dimension.End.Row;
+                        ws.PrinterSettings.Orientation = eOrientation.Landscape;
+                        ws.PrinterSettings.PrintArea = ws.Cells["A1:L" + currentEndRow];
+                        xlPackage.SaveAs(excelFile);
+                        string filePath = excelFile.ToString();
+                        string worksheetName = "Sheet1";
+                        int startColumn = 1;
+                        int endColumn = 12;
+                        int startRow = 6;
+                        int endrow = 6 + lst.Count;
+                        AutofitRowHeight(filePath, worksheetName, startRow, endrow, startColumn, endColumn);
+                        string pdfname = fname.Replace(".xlsx", ".pdf");
+                        var ret = ConvertXlstoPdf(fname, pdfname);
+                        return pdfname;
+                    }
+                }
+                return "";
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(" Error in generating control plan: " + ex.ToString());
+            return JsonConvert.SerializeObject(new { Message = ex.Message });
+        }
+    }
+    public string ConvertXlstoPdf(string docfile, string pdffile)
+    {
+        string docpath = Server.MapPath("~/pdftemp/" + docfile);
+        FileStream readFile = File.OpenRead(docpath);
+
+        Logger.LogError(docfile);
+
+        // reference: https://asp.syncfusion.com/demos/web/pdf/exceltopdf.aspx
+        //Convert the input Excel document to a PDF file
+        #region Convert Excel to PDF
+
+        try
+        {
+            ExcelToPdfConverter converter = null;
+
+            converter = new ExcelToPdfConverter(readFile);
+
+            //Intialize the PdfDocument Class
+            Syncfusion.Pdf.PdfDocument pdfDoc = new Syncfusion.Pdf.PdfDocument();
+
+            //Intialize the ExcelToPdfConverterSettings class
+            ExcelToPdfConverterSettings settings = new ExcelToPdfConverterSettings();
+
+            // only one value of the below can be set true
+            bool chk1 = false; // no scaling
+            bool chk2 = true; // fit all columns on one page
+            bool chk3 = false; // fit all rows on one page
+            bool chk4 = false; // fit sheet on one page
+
+
+            //Set the Layout Options for the output Pdf page.
+            if (chk1)
+                settings.LayoutOptions = LayoutOptions.NoScaling;
+            else if (chk3)
+                settings.LayoutOptions = LayoutOptions.FitAllRowsOnOnePage;
+            else if (chk2)
+                settings.LayoutOptions = LayoutOptions.FitAllColumnsOnOnePage;
+            else
+                settings.LayoutOptions = LayoutOptions.FitSheetOnOnePage;
+            //Enable EmbedFonts
+            settings.EmbedFonts = true;
+            //Enable AutoDetectComplexScript property
+            settings.AutoDetectComplexScript = true;
+
+
+            //Assign the output PdfDocument to the TemplateDocument property of ExcelToPdfConverterSettings 
+            settings.TemplateDocument = pdfDoc;
+            settings.DisplayGridLines = GridLinesDisplayStyle.Invisible;
+            //Convert the Excel document to PDf
+            pdfDoc = converter.Convert(settings);
+
+            //Save the pdf file            
+
+            // pdfDoc.Save("ExceltoPDF.pdf", Response, HttpReadType.Save);
+
+            string pdfpath = Server.MapPath("~/pdftemp/" + pdffile);
+            pdfDoc.Save(pdfpath);
+            // readFile.Close();
+            return pdfpath;
+
+
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(" Error when converting XLSX to PDF: " + ex.ToString());
+            return JsonConvert.SerializeObject(new { Message = ex.Message });
+        }
+
+        #endregion
+    }
+    [WebMethod]
+    public string GeneratePcc(int partsl, int oprnsl)
+    {
+        try
+        {
+            int imgno = 0;
+            string fname = "pcc_" + partsl + "_" + oprnsl + ".xlsx";
+            string filepath = "~/pdftemp/" + fname;
+            FileInfo excelFile = new FileInfo(Server.MapPath(filepath));
+            FileInfo templateFile = new FileInfo(Server.MapPath("~/App_Data/PCCTemplate.xlsx"));
+            string sqllegend = @"select distinct Top 4 sp.splCharFile,spl_char_desc FROM[SpecialChars] sp inner join[mei_controlplan].[dbo].[customers] c on
+                                c.cust_slno = sp.cust_slno inner join parts p on p.Customer_name = c.cust_name
+                                inner join ControlPlan cp on cp.part_slno = p.part_slno
+                                where cp.part_slno =" + partsl
+                                + " and sp.show_in_legend = 1";
+            string sql = @"SELECT  c.cp_slno FROM controlplan c where c.rev_no =(SELECT MAX(p.rev_no ) from controlplan p WHERE " +
+            "p.Submitstatus='A' and p.Obsolete='N' AND c.part_slno=p.part_slno and c.operation_slno=p.operation_slno AND c.machine_slno=p.machine_slno ) and c.part_slno=" + partsl + " and c.operation_slno= " + oprnsl + "";
+            string cp_slno = string.Empty;
+            using (Database db = new Database("connString"))
+            {
+                List<Class_SpecialChars> lstlegend = db.Fetch<Class_SpecialChars>(sqllegend);
+                cp_slno = db.ExecuteScalar<string>(sql);
+                db.Execute(";exec SP_Temp_RptControlPlan @@cp_slno=@0,@@part_slno=@1, @@oper_slno=@2", cp_slno, partsl, oprnsl);
+
+                string sqlcp = @"Select * from temp_rptControlPlan where methodDesc2='PCC'
+                              -- tr inner join SampleFrequency sf on sf.freq_slno =tr.freq_slno 
+                                --  where sf.pcc=1";
+                List<Class_Temp_RptControlPlan> lst = db.Fetch<Class_Temp_RptControlPlan>(sqlcp);
+                string sqlmachinecode = @"select machinecode from machines where machine_slno=@0";
+                string mach = db.ExecuteScalar<string>(sqlmachinecode, lst[0].machine_slno);
+                if (lst.Count > 0)
+                {
+                    string imgPath = Server.MapPath("~/Documents/");
+                    double xlrowht = 50;
+                    using (ExcelPackage xlPackage = new ExcelPackage(excelFile, templateFile))
+                    {
+                        ExcelWorksheet ws = xlPackage.Workbook.Worksheets[1];
+                        ws.Cells["A2"].Value = "Part Name: " + lst[0].PartDescription;
+                        ws.Cells["E2"].Value = "Part No : " + lst[0].mstPartNo;
+                        ws.Cells["I2"].Value = "Rev status : " + lst[0].partIssueNo + " - " + lst[0].partIssueDt.Replace('/', '.');
+                        ws.Cells["M2"].Value = "Operation No./ Name : " + lst[0].process_no + " / " + lst[0].OperationDesc;
+                        ws.Cells["M2"].Style.WrapText = true;
+                        if (mach == null || mach == "" || mach == "-")
+                            ws.Cells["Q2"].Value = "Machine Description/ Code : " + lst[0].MachineDesc;
+                        else
+                            ws.Cells["Q2"].Value = "Machine Description/ Code : " + lst[0].MachineDesc + "/ " + mach;
+                        
+                        ws.Cells["Q2"].Style.WrapText = true;
+                        ws.Cells["I2"].Style.WrapText = true;
+                        int sl_no = 1;
+                        int row = 6;
+                        ws.InsertRow(row, lst.Count);
+                        int index = (5 + (lst.Count) + 3);
+                        int legendcount = lstlegend.Count;
+                        if (lstlegend.Count > 0)
+                        {
+                            if (lst[0].Customer_name.ToLower().Trim() == "meritor")
+                            {
+                                if (!string.IsNullOrWhiteSpace(lstlegend[0].splCharFile))
+                                {
+                                    addimagePCC(lstlegend[0].splCharFile, index + 1, 24, ws, "0");
+                                    ws.Cells[index, 27].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                                    // ws.Cells[index, 27].Value = lstlegend[0].spl_char_desc;
+                                }
+                                if (lstlegend.Count > 1)
+                                {
+                                    if (!string.IsNullOrWhiteSpace(lstlegend[1].splCharFile))
+                                    {
+                                        addimagePCC(lstlegend[1].splCharFile, index + 3, 24, ws, "1");
+                                        ws.Cells[index + 2, 27].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                                        // ws.Cells[index + 2, 27].Value = lstlegend[1].spl_char_desc;
+                                    }
+                                }
+                                ws.Cells["AB" + (index - 1) + ":AD" + index + 2].Clear();
+                                ws.Cells["AE" + (index - 1) + ":AG" + index + 2].Clear();
+                                ws.Cells["AB" + (index - 1) + ":AD" + index + 2].Clear();
+                            }
+                            else if (lst[0].Customer_name.ToLower().Trim() == "volvo")
+                            {
+                                ws.Cells["Y" + (index - 1) + ":AA" + (index - 1)].Clear();
+                                ws.Cells["AE" + (index - 1) + ":AG" + (index - 1)].Copy(ws.Cells["Y" + (index - 1) + ":AA" + (index - 1)]);
+                                ws.Cells["Y" + (index) + ":AA" + (index + 1)].Clear();
+                                ws.Cells["AE" + (index) + ":AG" + (index + 1)].Copy(ws.Cells["Y" + (index) + ":AA" + (index + 1)]);
+                                ws.Cells["Y" + (index + 2) + ":AA" + (index + 3)].Clear();
+                                ws.Cells["AE" + (index + 2) + ":AG" + (index + 3)].Copy(ws.Cells["Y" + (index + 2) + ":AA" + (index + 3)]);
+                                ws.Cells["Y" + (index - 1) + ":AA" + (index - 1)].Merge = true;
+                                ws.Cells["Y" + (index) + ":AA" + (index + 1)].Merge = true;
+                                ws.Cells["Y" + (index + 2) + ":AA" + (index + 3)].Merge = true;
+                                if (!string.IsNullOrWhiteSpace(lstlegend[0].splCharFile))
+                                {
+                                    if (lstlegend[0].spl_char_desc.Contains("Critical"))
+                                    {
+                                        addimagePCC(lstlegend[0].splCharFile, index + 1, 24, ws, "0");
+                                        // ws.Cells[index, 27].Value = lstlegend[0].spl_char_desc;
+                                    }
+                                }
+                                if (lstlegend.Count > 1)
+                                {
+                                    if (!string.IsNullOrWhiteSpace(lstlegend[1].splCharFile))
+                                    {
+                                        if (lstlegend[1].spl_char_desc.Contains("Critical"))
+                                        {
+                                            addimagePCC(lstlegend[0].splCharFile, index + 1, 24, ws, "1");
+                                        }
+
+                                    }
+                                }
+                                if (lstlegend.Count > 2)
+                                {
+                                    if (!string.IsNullOrWhiteSpace(lstlegend[2].splCharFile))
+                                    {
+                                        if (lstlegend[2].spl_char_desc.Contains("Significant"))
+                                        {
+                                            addimagePCC(lstlegend[2].splCharFile, index + 3, 24, ws, "2");
+                                        }
+                                    }
+                                }
+                                if (lstlegend.Count > 3)
+                                {
+                                    if (!string.IsNullOrWhiteSpace(lstlegend[3].splCharFile))
+                                    {
+                                        if (lstlegend[3].spl_char_desc.Contains("Significant"))
+                                        {
+                                            addimagePCC(lstlegend[3].splCharFile, index + 3, 24, ws, "3");
+                                        }
+                                    }
+                                }
+                                if (lstlegend.Count > 4)
+                                {
+                                    if (!string.IsNullOrWhiteSpace(lstlegend[4].splCharFile))
+                                    {
+                                        if (lstlegend[4].spl_char_desc.Contains("Significant"))
+                                        {
+                                            addimagePCC(lstlegend[4].splCharFile, index + 3, 24, ws, "4");
+                                        }
+                                    }
+                                }
+                                ws.Cells["AB" + (index - 1) + ":AD" + index + 2].Clear();
+                                ws.Cells["AE" + (index - 1) + ":AG" + index + 2].Clear();
+                                ws.Cells["AB" + (index - 1) + ":AD" + index + 2].Clear();
+                            }
+                            else if (lst[0].Customer_name.ToLower().Trim() == "apa")
+                            {
+                                ws.Cells["Y" + (index - 1) + ":AA" + (index - 1)].Clear();
+                                ws.Cells["AB" + (index - 1) + ":AD" + (index - 1)].Copy(ws.Cells["Y" + (index - 1) + ":AA" + (index - 1)]);
+                                ws.Cells["Y" + (index) + ":AA" + (index + 1)].Clear();
+                                ws.Cells["Y" + (index + 2) + ":AA" + (index + 3)].Clear();
+                                ws.Cells["Y" + (index) + ":AA" + (index + 3)].Merge = true;
+                                ws.Cells["AB" + (index) + ":AD" + (index + 3)].Copy(ws.Cells["Y" + (index) + ":AA" + (index + 3)]);
+                                if (!string.IsNullOrWhiteSpace(lstlegend[0].splCharFile))
+                                {
+                                    if (lstlegend[0].spl_char_desc.Contains("Key"))
+                                    {
+                                        addimagePCC(lstlegend[0].splCharFile, index, 24, ws, "0");
+                                        ws.Cells[index, 27].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                                    }
+                                }
+
+                                ws.Cells["AB" + (index - 1) + ":AD" + index + 2].Clear();
+                                ws.Cells["AE" + (index - 1) + ":AG" + index + 2].Clear();
+                                ws.Cells["AB" + (index - 1) + ":AD" + index + 2].Clear();
+
+                            }
+
+
+                        }
+                        foreach (Class_Temp_RptControlPlan c in lst)
+                        {
+                            ws.Row(row).Height = xlrowht;
+                            ws.Cells[row, 1].Value = sl_no.ToString();
+                            ws.Cells[row, 2].Value = c.product_char;
+                            if (c.splChar_slno > 0)
+                            {
+                                string img = GetFileName(c.splChar_slno.ToString());
+                                string pth = (imgPath + img);
+                                FileInfo imgFile = new FileInfo(pth);
+                                if (imgFile.Exists)
+                                {
+                                    imgno += 1;
+                                    Bitmap image = new Bitmap(pth);
+                                    ExcelPicture excelPicture = ws.Drawings.AddPicture("PictureName" + imgno, image);
+                                    ExcelRangeBase cell = ws.Cells[row - 1, 2];
+                                    excelPicture.SetPosition(cell.Start.Row, 8, cell.Start.Column, 5);
+                                    excelPicture.SetSize(40, 40);
+                                }
+                            }
+                            ws.Cells[row, 4].Value = c.spec1;
+                            ws.Cells[row, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                            ws.Cells[row, 1].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                            ws.Cells[row, 6].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                            ws.Cells[row, 6].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+
+                            ws.Cells[row, 4].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                            ws.Cells[row, 4].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                            ws.Cells[row, 4].Style.WrapText = true;
+                            //ws.Cells[row, 4].Value = c.tol_min + "/" + c.tol_max;
+                            ws.Cells[row, 5].Value = c.measurementTech;
+                            ws.Cells[row, 5].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                            ws.Cells[row, 5].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                            ws.Cells[row, 5].Style.WrapText = true;
+                            //ws.Cells[row, 6].Value = c.sampleFreq2 + " / " + c.sampleSize2;
+                            if (c.sampleFreq2=="" || c.sampleFreq2 ==null)
+                            ws.Cells[row, 6].Value =  c.sampleSize2;
+                            else
+                                ws.Cells[row, 6].Value = c.sampleFreq2 + " / " + c.sampleSize2;
+                            ws.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                            ws.Cells[row, 2].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                            ws.Cells[row, 2].Style.WrapText = true;
+                            ws.Cells[row, 6].Style.WrapText = true;
+                            ws.Row(row).Height = xlrowht;
+                            //// ---------- added to set the row height
+                            //// Find the cell with the maximum content length
+                            //ExcelRangeBase cellWithMaxContent = FindCellWithMaxContentPCC(row, ws,"PCC");
+
+
+                            //// Calculate the required row height based on the cell content
+                            //int requiredRowHeight = GetRequiredRowHeight(ws, cellWithMaxContent);
+
+                            //// Set the row height to the calculated required height (if it's greater than the default height)
+                            //int finalRowHeight = (int)Math.Max(ws.DefaultRowHeight, requiredRowHeight);
+                            //ws.Row(cellWithMaxContent.Start.Row).Height = finalRowHeight + 30 ;
+                            // ---------------
+                            sl_no += 1; row = row + 1;
+                        }
+
+                        ws.Cells[5 + lst.Count + 8, 1].Value = "F/Q/009 Rev:0";
+                        string[] cpnumber = lst[0].cp_number.Split('/');
+                        ws.Cells[5 + lst.Count + 8, 24].Value = cpnumber[1] + cpnumber[2] + " / " + lst[0].process_no + "/ PCC - Rev No:0";
+                        ws.Cells[5 + lst.Count + 8, 24].Style.WrapText = true;
+                        int currentEndRow = ws.Dimension.End.Row;
+                        ws.Cells["A1:AA" + currentEndRow].Style.Border.Top.Style = ExcelBorderStyle.Hair;
+                        ws.Cells["A1:AA" + currentEndRow].Style.Border.Bottom.Style = ExcelBorderStyle.Hair;
+                        ws.Cells["A1:AA" + currentEndRow].Style.Border.Left.Style = ExcelBorderStyle.Hair;
+                        ws.Cells["A1:AA" + currentEndRow].Style.Border.Right.Style = ExcelBorderStyle.Hair;
+                        ws.PrinterSettings.Orientation = eOrientation.Landscape;
+                        ws.PrinterSettings.PrintArea = ws.Cells["A1:AA" + currentEndRow];
+                        xlPackage.SaveAs(excelFile);
+                        string filePath = excelFile.ToString();
+                        string worksheetName = "Sheet1";
+                        int startColumn = 1;
+                        int endColumn = 27;
+                        int startRow = 6;
+                        int endrow = 5 + lst.Count;
+                        AutofitRowHeight(filePath, worksheetName, startRow, endrow, startColumn, endColumn);
+                        string pdfname = fname.Replace(".xlsx", ".pdf");
+                        var ret = ConvertXlstoPdf(fname, pdfname);
+                        return pdfname;
+                    }
+                }
+                else
+                    return "";
+            }
+        }
+        catch (Exception ex)
+        {
+
+            Logger.LogError(" Error in generating control plan: " + ex.ToString());
+            return JsonConvert.SerializeObject(new { Message = ex.Message });
+        }
+
+    }
+
+    [WebMethod]
+    public string GenerateFoi(int partsl, int oprnsl)
+    {
+        try
+        {
+            string sqllegend = @"select distinct sp.splCharFile,spl_char_desc FROM[SpecialChars] sp inner join[mei_controlplan].[dbo].[customers] c on
+                                c.cust_slno = sp.cust_slno inner join parts p on p.Customer_name = c.cust_name
+                                inner join ControlPlan cp on cp.part_slno = p.part_slno
+                                where cp.part_slno =" + partsl + " and cp.operation_slno =" + oprnsl + " and sp.show_in_legend = 1";
+
+            string fname = "foi_" + partsl + "_" + oprnsl + ".xlsx";
+            string filepath = "~/pdftemp/" + fname;
+            FileInfo excelFile = new FileInfo(Server.MapPath(filepath));
+            FileInfo templateFile = new FileInfo(Server.MapPath("~/App_Data/FOITemplate.xlsx"));
+
+
+            string sql = @"SELECT  c.cp_slno FROM controlplan c where c.rev_no =(SELECT MAX(p.rev_no ) from controlplan p WHERE " +
+            "p.Submitstatus='A' and p.Obsolete='N' AND c.part_slno=p.part_slno and c.operation_slno=p.operation_slno AND c.machine_slno=p.machine_slno ) and c.part_slno=" + partsl + " and c.operation_slno= " + oprnsl + "";
+
+            string cp_slno = string.Empty;
+            using (Database db = new Database("connString"))
+            {
+                List<Class_SpecialChars> lstlegend = db.Fetch<Class_SpecialChars>(sqllegend);
+                cp_slno = db.ExecuteScalar<string>(sql);
+                db.Execute(";exec SP_Temp_RptControlPlan @@cp_slno=@0,@@part_slno=@1, @@oper_slno=@2", cp_slno, partsl, oprnsl);
+
+                string sqlcp = @"Select * from temp_rptControlPlan where methodDesc='FOI'
+-- tr inner join SampleFrequency sf on sf.freq_slno =tr.freq_slno 
+-- where sf.foi=1";
+               
+                List<Class_Temp_RptControlPlan> lst = db.Fetch<Class_Temp_RptControlPlan>(sqlcp);
+                string sqlmachinecode = @"select machinecode from machines where machine_slno=@0";
+                string mach = db.ExecuteScalar<string>(sqlmachinecode, lst[0].machine_slno);
+                if (lst.Count > 0)
+                {
+                    double xlrowht = 50;
+                    using (ExcelPackage xlPackage = new ExcelPackage(excelFile, templateFile))
+                    {
+                        ExcelWorksheet ws = xlPackage.Workbook.Worksheets[1];
+                        ws.Cells["A4"].Value = "Part Name: " + lst[0].PartDescription;
+                        ws.Cells["D4"].Value = "Operation No./ Name: " + lst[0].process_no + " / " + lst[0].OperationDesc;
+                        ws.Cells["D4"].Style.WrapText = true;
+                        ws.Cells["D4"].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                        ws.Cells["A5"].Value = "Part No : " + lst[0].mstPartNo;
+                        ws.Cells["D5"].Value = "Rev Status : " + lst[0].partIssueNo + " - " + lst[0].partIssueDt.Replace('/', '.');
+                        if(mach==null || mach=="" || mach=="-")
+                        ws.Cells["L3"].Value = lst[0].MachineDesc;
+                        else
+                            ws.Cells["L3"].Value = lst[0].MachineDesc +" / " + mach;
+                        ws.Cells["L3"].Style.WrapText = true;
+                      ws.Cells["D5"].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                        int sl_no = 1;
+                        int row = 8;
+                        ws.InsertRow(row, lst.Count - 1);
+                        int index = (row + (lst.Count - 1) + 1);
+                        int imgno = 0;
+                        string imgPath = Server.MapPath("~/Documents/");
+                        int legendcount = lstlegend.Count;
+                        if (lstlegend.Count > 0)
+                        {
+                            if (!string.IsNullOrWhiteSpace(lstlegend[0].splCharFile))
+                            {
+                                addimage(lstlegend[0].splCharFile, index, 1, ws, "0");
+                                ws.Cells[index, 1].Value = " QCC - Quality Control Characteristics";
+                            }
+                            if (lstlegend.Count > 1)
+                            {
+                                if (!string.IsNullOrWhiteSpace(lstlegend[1].splCharFile))
+                                {
+                                    addimage(lstlegend[1].splCharFile, index, 7, ws, "1");
+                                  //  ws.Cells[index, 7].Value = lstlegend[1].spl_char_desc + " - Safety Related Characteristics";
+                                    ws.Cells[index, 7].Value =  " SRC - Safety Related Characteristics";
+                                }
+                            }
+                        }
+
+                        ws.Cells[index + 3, 1].Value = "Inspected By: ";
+                        //ws.Cells[index + 3, 8].Value = "Approved By: " + lst[0].approvedBy;
+                        ws.Cells[index + 3, 8].Value = "Approved By: ";
+                        string[] cp = lst[0].cp_number.Split('/');
+                        ws.Cells[index + 4, 12].Value = cp[1] + cp[2] + "/" + lst[0].process_no + "/FOI - Rev No:00";
+
+                        foreach (Class_Temp_RptControlPlan c in lst)
+                        {
+                            ws.Row(row).Height = xlrowht;
+                            ws.Cells[row, 1].Value = sl_no.ToString();
+                            ws.Cells[row, 2].Value = c.product_char;
+                            if (c.splChar_slno > 0)
+                            {
+                                string img = GetFileName(c.splChar_slno.ToString());
+                                string pth = (imgPath + img);
+                                FileInfo imgFile = new FileInfo(pth);
+                                if (imgFile.Exists)
+                                {
+                                    imgno += 1;
+                                    Bitmap image = new Bitmap(pth);
+                                    ExcelPicture excelPicture = ws.Drawings.AddPicture("PictureName" + imgno, image);
+                                    ExcelRangeBase cell = ws.Cells[row - 1, 2];
+                                    excelPicture.SetPosition(cell.Start.Row, 18, cell.Start.Column, 10);
+                                    excelPicture.SetSize(50, 50);
+                                }
+                            }
+                            //ws.Cells[row, 4].Value = c.tol_min + "/" + c.tol_max;
+
+                            ws.Cells[row, 6].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                            ws.Cells[row, 6].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                            ws.Cells[row, 7].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                            ws.Cells[row, 7].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                            ws.Cells[row, 4].Value = c.spec1;
+                            ws.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                            ws.Cells[row, 2].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                            ws.Cells[row, 2].Style.WrapText = true;
+                            ws.Cells[row, 6].Style.WrapText = true;
+                            ws.Cells[row, 4].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                            ws.Cells[row, 4].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+
+                            ws.Cells[row, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                            ws.Cells[row, 1].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                            ws.Cells[row, 4].Style.WrapText = true;
+                            ws.Cells[row, 6].Value = c.measurementTech;
+                            ws.Cells[row, 7].Value = c.sampleSize;
+                            ws.Row(row).Height = xlrowht;
+                            // ---------- added to set the row height
+                            // Find the cell with the maximum content length
+                            //ExcelRangeBase cellWithMaxContent = FindCellWithMaxContentPCC(row, ws,"FOI");
+
+
+                            //// Calculate the required row height based on the cell content
+                            //int requiredRowHeight = GetRequiredRowHeight(ws, cellWithMaxContent);
+
+                            //// Set the row height to the calculated required height (if it's greater than the default height)
+                            //int finalRowHeight = (int)Math.Max(ws.DefaultRowHeight, requiredRowHeight);
+                            //ws.Row(cellWithMaxContent.Start.Row).Height = finalRowHeight ;
+                            //// ---------------
+
+                            sl_no += 1;
+                            row = row + 1;
+
+                        }
+                        int currentEndRow = ws.Dimension.End.Row;
+                        ws.Cells["A1:M" + currentEndRow].Style.Border.Top.Style = ExcelBorderStyle.Hair;
+                        ws.Cells["A1:M" + currentEndRow].Style.Border.Bottom.Style = ExcelBorderStyle.Hair;
+                        ws.Cells["A1:M" + currentEndRow].Style.Border.Left.Style = ExcelBorderStyle.Hair;
+                        ws.Cells["A1:M" + currentEndRow].Style.Border.Right.Style = ExcelBorderStyle.Hair;
+                        ws.PrinterSettings.Orientation = eOrientation.Landscape;
+                        ws.PrinterSettings.PrintArea = ws.Cells["A1:M" + currentEndRow];
+
+                        xlPackage.SaveAs(excelFile);
+                        string filePath = excelFile.ToString();
+                        string worksheetName = "Sheet1";
+                        int startColumn = 1;
+                        int endColumn = 13;
+                        int startRow = 8;
+                        int endrow = 7 + lst.Count;
+                        AutofitRowHeight(filePath, worksheetName, startRow, endrow, startColumn, endColumn);
+                        string pdfname = fname.Replace(".xlsx", ".pdf");
+                        var ret = ConvertXlstoPdf(fname, pdfname);
+                        return pdfname;
+                    }
+                }
+                else
+                    return "";
+            }
+        }
+        catch (Exception ex)
+        {
+
+            Logger.LogError(" Error in generating control plan: " + ex.ToString());
+            return JsonConvert.SerializeObject(new { Message = ex.Message });
+        }
+
+    }
+    public ExcelWorksheet Copy(ExcelWorkbook workbook, string existingWorksheetName, string newWorksheetName)
+    {
+        ExcelWorksheet worksheet = workbook.Worksheets.Copy(existingWorksheetName, newWorksheetName);
+        return worksheet;
+    }
+
+    [WebMethod]
+    public string GeneratePmc(int partsl, int oprnsl, string charsl)
+    {
+        try
+        {
+            string fname = "pmc_" + partsl + "_" + oprnsl + ".xlsx";
+            string filepath = "~/pdftemp/" + fname;
+            FileInfo excelFile = new FileInfo(Server.MapPath(filepath));
+            FileInfo templateFile = new FileInfo(Server.MapPath("~/App_Data/PMC.xlsx"));
+
+            string sql = @"SELECT  c.cp_slno FROM controlplan c where c.rev_no =(SELECT MAX(p.rev_no ) from controlplan p WHERE " +
+                        "p.Submitstatus='A' and p.Obsolete='N' AND c.part_slno=p.part_slno and c.operation_slno=p.operation_slno AND c.machine_slno=p.machine_slno ) and c.part_slno=" + partsl + " and c.operation_slno= " + oprnsl + "";
+
+            string cp_slno = string.Empty;
+            using (Database db = new Database("connString"))
+            {
+                cp_slno = db.ExecuteScalar<string>(sql);
+                db.Execute(";exec SP_Temp_RptControlPlan @@cp_slno=@0,@@part_slno=@1, @@oper_slno=@2", cp_slno, partsl, oprnsl);
+                string sqlcp = @"Select * from temp_rptControlPlan  where methodDesc2='PMC' " +
+                       " and (product_char <>'-' or product_char  <>'')" +
+                       "-- tr inner join SampleFrequency sf on sf.freq_slno =tr.freq_slno " +
+                                    "-- where sf.pmc=1" +
+                                    "-- where tr.product_char='" + charsl + "'";
+                List<Class_Temp_RptControlPlan> lst = db.Fetch<Class_Temp_RptControlPlan>(sqlcp);
+                if (lst.Count > 0)
+                {
+                    using (ExcelPackage xlPackage = new ExcelPackage(excelFile, templateFile))
+                    {
+                        int countofchars = 0;
+                        double xlrowht = 50;
+                        foreach (Class_Temp_RptControlPlan c1 in lst)
+                        {
+
+                            countofchars++;
+                            Copy(xlPackage.Workbook, xlPackage.Workbook.Worksheets[countofchars].Name, "Sheet_" + countofchars);
+
+                        }
+                        xlPackage.Workbook.Worksheets.Delete("Template");
+                        int cn = xlPackage.Workbook.Worksheets.Count;
+                        countofchars = 1;
+                        foreach (Class_Temp_RptControlPlan c1 in lst)
+                        {
+
+                            string sqlmachinecode = @"select machinecode from machines where machine_slno=@0";
+                            string mach = db.ExecuteScalar<string>(sqlmachinecode, c1.machine_slno);
+
+                            string sqlSpclChar = @"select splCharFile from SpecialChars where splChar_slno= @0";
+                            string splchar = db.ExecuteScalar<string>(sqlSpclChar, c1.splChar_slno);
+                            string spl = string.Empty;
+                            if (!string.IsNullOrWhiteSpace(splchar))
+                            {
+                                if (splchar.Contains("QCC") || splchar.Contains("-"))
+                                {
+                                    string[] name = splchar.Split('-');
+                                    string[] secpart = name[1].Split('.');
+                                    spl = secpart[0] + " - " + name[0];
+                                }
+                                else
+                                {
+                                    string[] secpart = splchar.Split('.');
+                                    spl = secpart[0];
+                                }
+                            }
+                            ExcelWorksheet ws = xlPackage.Workbook.Worksheets["Sheet_" + countofchars];
+                            ws.Cells["A3"].Value = "Part No: " + c1.mstPartNo + " / " + c1.partIssueNo + " - " + c1.partIssueDt.Replace('/','.');
+                            ws.Cells["A3"].Style.WrapText = true;
+                            ws.Cells["E3"].Value = "Part Name: " + c1.PartDescription;
+                            ws.Cells["K3"].Value = "Characteristics: " + c1.product_char;
+                            ws.Cells["A4"].Value = "Operation No/Name: "+ c1.process_no +" / "+ c1.OperationDesc;
+                            ws.Cells["A4"].Style.WrapText = true;
+                            if(mach==""||mach==null ||mach=="-")
+                                ws.Cells["E4"].Value = "Machine Description/Code: " + c1.MachineDesc;
+                            else 
+                            ws.Cells["E4"].Value = "Machine Description/Code: " + c1.MachineDesc + " / " + mach;
+                            ws.Cells["E4"].Style.WrapText = true;
+                            ws.Cells["T3"].Value = "Spec: " + c1.spec1;
+                            ws.Cells["K4"].Value = "Measuring Equipment: " + c1.measurementTech2;
+                            ws.Cells["K4"].Style.WrapText = true;
+                            ws.Cells["W4"].Value = spl;
+
+                            Color red = Color.FromArgb(0xFF, 0xFF, 0x00, 0x00);        // #FF0000
+                            Color orange = Color.FromArgb(0xFF, 0xF4, 0xB0, 0x84);    // #F4B084
+                            Color yellow = Color.FromArgb(0xFF, 0xFF, 0xF2, 0xCC);    // #FFF2CC
+                            Color green = Color.FromArgb(0xFF, 0xC6, 0xE0, 0xB4);     // #C6E0B4
+
+                            //countofchars += 1;
+                            string tol_type = "bilateral";
+                            decimal lsl = c1.min_spec;
+                            decimal usl = c1.max_spec;
+
+
+                            // for unilateral
+                            if (c1.min_spec == 0 && c1.max_spec > 0)
+                            {
+                                lsl = 0;
+                                usl = c1.max_spec;
+                                tol_type = "uni-with-max";
+                            }
+                            int row = 6;
+                            int colStart = 3, colEnd = 24;
+                            int row_mean = 0, row_lsl = 0, row_usl = 0;
+
+                            if (tol_type == "bilateral")
+                            {
+                                List<Class_PmcSeries> lstdata = new List<Class_PmcSeries>();
+
+                                decimal fulltol = usl - lsl;
+                                decimal tol = fulltol / 2;
+                                decimal incr = tol * 0.1m;
+                                decimal lowest = lsl - incr;
+                                decimal highest = usl + incr;
+                                decimal nominal = lsl + tol;
+
+                                decimal red_data_1 = lowest;
+                                decimal red_data_2 = highest;
+
+                                decimal perc60 = fulltol * 60 / 100;
+                                decimal perc30 = perc60 / 2;
+
+
+                                decimal green_data_start = nominal - perc30;
+                                decimal green_data_end = nominal + perc30;
+
+                                decimal perc_45 = fulltol * 45 / 100;
+                                decimal yellow_min_start = nominal - perc_45;
+                                decimal yellow_min_end = green_data_start;
+
+                                decimal yellow_max_start = green_data_end;
+                                decimal yellow_max_end = nominal + perc_45;
+
+                                decimal perc_50 = fulltol * 50 / 100;
+                                decimal orange_min_start = nominal - perc_50;
+                                decimal orange_min_end = yellow_min_start;
+
+                                decimal orange_max_start = yellow_max_start;
+                                decimal orange_max_end = nominal + perc_50;
+
+                                for (decimal i = highest; i >= lowest; i -= incr)
+                                {
+                                    Class_PmcSeries c = new Class_PmcSeries
+                                    {
+                                        fullset = i
+                                    };
+                                    lstdata.Add(c);
+                                }
+                                // insert rows to the excel
+                                ws.InsertRow(row, lstdata.Count);
+
+                                // loop through data and fill excel file
+                                foreach (Class_PmcSeries c in lstdata)
+                                {
+                                    ws.Cells["B" + row].Value = c.fullset;
+                                    if (c.fullset == usl)
+                                    {
+                                        ws.Cells["A" + row].Value = "USL";
+                                        row_usl = row;
+                                    }
+                                    else if (c.fullset == lsl)
+                                    {
+                                        ws.Cells["A" + row].Value = "LSL";
+                                        row_lsl = row;
+                                    }
+                                    else if (c.fullset == nominal)
+                                    {
+                                        ws.Cells["A" + row].Value = "MEAN";
+                                        row_mean = row;
+                                    }
+
+                                    // shade with red color
+                                    if (c.fullset == red_data_1 || c.fullset == red_data_2)
+                                    {
+                                        ws.Cells[row, colStart, row, colEnd].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                                        ws.Cells[row, colStart, row, colEnd].Style.Fill.BackgroundColor.SetColor(red);
+                                    }
+                                    // shade with green color
+                                    else if (c.fullset >= green_data_start && c.fullset <= green_data_end)
+                                    {
+                                        ws.Cells[row, colStart, row, colEnd].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                                        ws.Cells[row, colStart, row, colEnd].Style.Fill.BackgroundColor.SetColor(green);
+                                    }
+
+                                    // yellow band
+                                    else if ((c.fullset >= yellow_min_start && c.fullset < yellow_min_end) ||
+                                             (c.fullset > yellow_max_start && c.fullset <= yellow_max_end))
+                                    {
+                                        ws.Cells[row, colStart, row, colEnd].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                                        ws.Cells[row, colStart, row, colEnd].Style.Fill.BackgroundColor.SetColor(yellow);
+                                    }
+                                    // orange band
+                                    else
+                                    //if ((c.fullset > orange_min_start && c.fullset <= orange_min_end) ||
+                                    //         (c.fullset > orange_max_start && c.fullset <= orange_max_end))
+                                    {
+                                        ws.Cells[row, colStart, row, colEnd].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                                        ws.Cells[row, colStart, row, colEnd].Style.Fill.BackgroundColor.SetColor(orange);
+                                    }
+                                    row += 1;
+                                }
+                                // delete 2 blank rows after data filled
+                                //ws.DeleteRow(row);
+                               // ws.DeleteRow(row);
+                                //ws.Cells[5 + lstdata.Count + 1, 1].Value = "PROCESS LOG CODE";
+                           
+                                ws.Cells[6, 2, row, 2].Style.Numberformat.Format = "0.000";
+                                ws.Cells[6, 1, row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                                ws.Cells[row_usl + 1, 1, row_mean - 1, 1].Merge = true;
+                                ws.Cells[row_mean + 1, 1, row_lsl - 1, 1].Merge = true;
+
+                                ws.Cells[5 + lstdata.Count + 14, 1].Value = "F/Q/010 Rev:0";
+                                string[] cpnumber = c1.cp_number.Split('/');
+                                ws.Cells[5 + lstdata.Count + 14, 21].Value = cpnumber[1] + cpnumber[2] +" / "+ c1.process_no + "/ PMC - Rev No:0";
+                                ws.Cells[5 + lstdata.Count + 14, 21].Style.WrapText = true;
+                                ws.Cells[5 + lstdata.Count + 14, 21].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                                ws.Cells[5 + lstdata.Count + 14, 21].Style.WrapText = true;
+                               // ws.Row(5 + lstdata.Count + 16).Height = 40;
+
+
+
+                                int currentEndRow = ws.Dimension.End.Row ;
+                                ws.Cells["A1:X" + currentEndRow].Style.Border.Top.Style = ExcelBorderStyle.Hair;
+                                ws.Cells["A1:X" + currentEndRow].Style.Border.Bottom.Style = ExcelBorderStyle.Hair;
+                                ws.Cells["A1:X" + currentEndRow].Style.Border.Left.Style = ExcelBorderStyle.Hair;
+                                ws.Cells["A1:X" + currentEndRow].Style.Border.Right.Style = ExcelBorderStyle.Hair;
+                                ws.PrinterSettings.Orientation = eOrientation.Landscape;
+                                ws.PrinterSettings.PrintArea = ws.Cells["A1:X" + (currentEndRow)];
+                                countofchars += 1;
+                            }
+                            else if (tol_type == "uni-with-max")
+                            {
+                                List<Class_PmcSeries> lstdata = new List<Class_PmcSeries>();
+
+                                decimal fulltol = c1.max_spec;
+                                decimal tol = c1.max_spec;
+                                decimal incr = tol * 0.1m;
+                                decimal lowest = lsl;
+                                decimal highest = usl + incr;
+
+                                decimal red_data_1 = lowest;
+                                decimal red_data_2 = highest;
+
+                                decimal perc60 = fulltol * 60 / 100;
+                                decimal perc30 = fulltol * 90 / 100;
+                                decimal perc10 = fulltol;
+
+                                decimal green_data_start = lsl;
+                                decimal green_data_end = perc60;
+
+                                decimal yellow_min_start = perc60 + incr;
+                                decimal yellow_min_end = perc30;
+
+                                decimal orange_min_start = perc30 + incr;
+                                decimal orange_min_end = perc10;
+
+
+                                for (decimal i = highest; i >= lowest; i -= incr)
+                                {
+                                    Class_PmcSeries c = new Class_PmcSeries
+                                    {
+                                        fullset = i
+                                    };
+                                    lstdata.Add(c);
+                                }
+                                // insert rows to the excel
+                                ws.InsertRow(row, lstdata.Count);
+
+                                // loop through data and fill excel file
+                                foreach (Class_PmcSeries c in lstdata)
+                                {
+                                    ws.Cells["B" + row].Value = c.fullset;
+                                    if (c.fullset == usl)
+                                    {
+                                        ws.Cells["A" + row].Value = "USL";
+                                        row_usl = row;
+                                    }
+                                    else if (c.fullset == lsl)
+                                    {
+                                        ws.Cells["A" + row].Value = "LSL";
+                                        row_lsl = row;
+                                    }
+
+                                    // shade with red color
+                                    if (c.fullset == red_data_1 || c.fullset == red_data_2)
+                                    {
+                                        ws.Cells[row, colStart, row, colEnd].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                                        ws.Cells[row, colStart, row, colEnd].Style.Fill.BackgroundColor.SetColor(red);
+                                    }
+                                    // shade with green color
+                                    else if (c.fullset >= green_data_start && c.fullset <= green_data_end)
+                                    {
+                                        ws.Cells[row, colStart, row, colEnd].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                                        ws.Cells[row, colStart, row, colEnd].Style.Fill.BackgroundColor.SetColor(green);
+                                    }
+
+                                    // yellow band
+                                    else if ((c.fullset >= yellow_min_start && c.fullset <= yellow_min_end))
+                                    {
+                                        ws.Cells[row, colStart, row, colEnd].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                                        ws.Cells[row, colStart, row, colEnd].Style.Fill.BackgroundColor.SetColor(yellow);
+                                    }
+                                    // orange band
+                                    else
+                                    //if ((c.fullset > orange_min_start && c.fullset <= orange_min_end) ||
+                                    //         (c.fullset > orange_max_start && c.fullset <= orange_max_end))
+                                    {
+                                        ws.Cells[row, colStart, row, colEnd].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                                        ws.Cells[row, colStart, row, colEnd].Style.Fill.BackgroundColor.SetColor(orange);
+                                    }
+                                    row += 1;
+                                }
+                                // delete 2 blank rows after data filled
+                               // ws.DeleteRow(row);
+                               // ws.DeleteRow(row);
+                                // ws.Cells[5 + lstdata.Count + 1, 1].Value = "PROCESS LOG CODE";
+                              
+                                ws.Cells[6, 2, row, 2].Style.Numberformat.Format = "0.000";
+                                ws.Cells[6, 1, row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                                ws.Cells[row_usl + 1, 1, row_lsl - 1, 1].Merge = true;
+
+                                ws.Cells[5 + lstdata.Count + 14, 1].Value = "F/Q/010 Rev: 0";
+                                string[] cpnumber = c1.cp_number.Split('/');
+                                ws.Cells[5 + lstdata.Count + 14, 21].Value = cpnumber[1] + cpnumber[2] + " / " + c1.process_no + "/ PMC - Rev No:0";
+                                ws.Cells[5 + lstdata.Count + 14, 21].Style.WrapText = true;
+                                ws.Cells[5 + lstdata.Count + 14, 21].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                                ws.Cells[5 + lstdata.Count + 14, 21].Style.WrapText = true;
+                              //  ws.Row(5 + lstdata.Count + 16).Height = 40;
+
+
+                                int currentEndRow = ws.Dimension.End.Row ;
+                                ws.Cells["A1:X" + currentEndRow].Style.Border.Top.Style = ExcelBorderStyle.Hair;
+                                ws.Cells["A1:X" + currentEndRow].Style.Border.Bottom.Style = ExcelBorderStyle.Hair;
+                                ws.Cells["A1:X" + currentEndRow].Style.Border.Left.Style = ExcelBorderStyle.Hair;
+                                ws.Cells["A1:X" + currentEndRow].Style.Border.Right.Style = ExcelBorderStyle.Hair;
+                                ws.PrinterSettings.Orientation = eOrientation.Landscape;
+                                ws.PrinterSettings.PrintArea = ws.Cells["A1:X" + (currentEndRow)];
+                                countofchars += 1;
+                            }
+
+                        }
+
+                        xlPackage.Save();
+                        string pdfname = fname.Replace(".xlsx", ".pdf");
+                        var ret = ConvertXlstoPdf(fname, pdfname);
+                        return pdfname;
+
+                    }
+
+                }
+                else
+                    return "";
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(" Error in generating control plan: " + ex.ToString());
+            return JsonConvert.SerializeObject(new { Message = ex.Message });
+        }
+    }
+
+    [WebMethod]
+    public string GenerateControlChart(int partsl, int oprnsl)
+    {
+        try
+        {
+            string fname = "cc_" + partsl + "_" + oprnsl + ".xlsx";
+            string filepath = "~/pdftemp/" + fname;
+            FileInfo excelFile = new FileInfo(Server.MapPath(filepath));
+            FileInfo templateFile = new FileInfo(Server.MapPath("~/App_Data/ControlChartTemplate.xlsx"));
+
+            string sql = @"SELECT  c.cp_slno FROM controlplan c where c.rev_no =(SELECT MAX(p.rev_no ) from controlplan p WHERE " +
+                        "p.Submitstatus='A' and p.Obsolete='N' AND c.part_slno=p.part_slno and c.operation_slno=p.operation_slno AND c.machine_slno=p.machine_slno ) and c.part_slno=" + partsl + " and c.operation_slno= " + oprnsl + "";
+
+            string cp_slno = string.Empty;
+            using (Database db = new Database("connString"))
+            {
+                cp_slno = db.ExecuteScalar<string>(sql);
+                db.Execute(";exec SP_Temp_RptControlPlan @@cp_slno=@0,@@part_slno=@1, @@oper_slno=@2", cp_slno, partsl, oprnsl);
+                string sqlcp = @"Select * from temp_rptControlPlan  where methodDesc2='PMC' " +
+                       " and (product_char <>'-' or product_char  <>'')" +
+                       "-- tr inner join SampleFrequency sf on sf.freq_slno =tr.freq_slno ";
+                //   "-- where sf.pmc=1" +
+                //      "-- where tr.product_char='" + charsl + "'";
+                List<Class_Temp_RptControlPlan> lst = db.Fetch<Class_Temp_RptControlPlan>(sqlcp);
+                if (lst.Count > 0)
+                {
+                    using (ExcelPackage xlPackage = new ExcelPackage(excelFile, templateFile))
+                    {
+                        int countofchars = 0;
+                        double xlrowht = 50;
+                        foreach (Class_Temp_RptControlPlan c1 in lst)
+                        {
+
+                            countofchars++;
+                            Copy(xlPackage.Workbook, xlPackage.Workbook.Worksheets[countofchars].Name, "Sheet_" + countofchars);
+
+                        }
+                        xlPackage.Workbook.Worksheets.Delete(1);
+                        //xlPackage.Workbook.Worksheets.Delete("Controlchart");
+                        int cn = xlPackage.Workbook.Worksheets.Count;
+                        countofchars = 1;
+                        foreach (Class_Temp_RptControlPlan c1 in lst)
+                        {
+
+                            string sqlmachinecode = @"select machinecode from machines where machine_slno=@0";
+                            string mach = db.ExecuteScalar<string>(sqlmachinecode, c1.machine_slno);
+                            string sqleval = @"select evalTech FROM [mei_controlplan].[dbo].[EvaluationTech] where evalTech_slno=@0";
+                            string eval = db.ExecuteScalar<string>(sqleval, c1.evalTech_slno2);
+                            string sqlSpclChar = @"select splCharFile from SpecialChars where splChar_slno= @0";
+                            string splchar = db.ExecuteScalar<string>(sqlSpclChar, c1.splChar_slno);
+                            string spl = string.Empty;
+                            if (!string.IsNullOrWhiteSpace(splchar))
+                            {
+                                if (splchar.Contains("QCC") || splchar.Contains("-"))
+                                {
+                                    string[] name = splchar.Split('-');
+                                    string[] secpart = name[1].Split('.');
+                                    spl = secpart[0] + " - " + name[0];
+                                }
+                                else
+                                {
+                                    string[] secpart = splchar.Split('.');
+                                    spl = secpart[0];
+                                }
+                            }
+                            ExcelWorksheet ws = xlPackage.Workbook.Worksheets["Sheet_" + countofchars];
+                            ws.Row(2).Height = 60;
+                            ws.Cells["A2"].Value = "Part No : " + c1.mstPartNo + " / " + c1.partIssueNo + " - " + c1.partIssueDt.Replace('/', '.');
+                            ws.Cells["A3"].Value = "Part Name: " + c1.PartDescription;
+                            ws.Cells["H2"].Value = "Description: " + c1.product_char;
+                            ws.Cells["H2"].Style.WrapText = true;
+                            ws.Cells["H3"].Value = "Specification: " + c1.spec1;
+                            ws.Cells["R2"].Value = "Process: " + c1.OperationDesc;
+                            ws.Cells["R2"].Style.WrapText = true;
+                            ws.Cells["R3"].Value = "Process No: " + c1.process_no;
+                            ws.Cells["Z2"].Value = "Instrument: " + eval;
+                            ws.Cells["Z2"].Style.WrapText = true;
+                            ws.Cells["Z3"].Value = "Least Count:0.001 ";
+                            if(mach==""|| mach==null|| mach=="-")
+                                ws.Cells["AI2"].Value = "Machine Description/Code: " + c1.MachineDesc;
+                            else
+                            ws.Cells["AI2"].Value = "Machine Description/Code: " + c1.MachineDesc + " / " + mach;
+                            ws.Cells["AI2"].Style.WrapText = true;
+                            ws.Cells["AI3"].Value = "Spl. Char:" + spl;
+
+                            string tol_type = "bilateral";
+                            decimal lsl = c1.min_spec;
+                            decimal usl = c1.max_spec;
+
+
+                            // for unilateral
+                            if (c1.min_spec == 0 && c1.max_spec > 0)
+                            {
+                                lsl = 0;
+                                usl = c1.max_spec;
+                                tol_type = "uni-with-max";
+                            }
+
+                            int row = 6;
+                            int colStart = 3, colEnd = 45;
+                            int row_mean = 0, row_lsl = 0, row_usl = 0;
+
+                            if (tol_type == "bilateral")
+                            {
+                                List<Class_PmcSeries> lstdata = new List<Class_PmcSeries>();
+
+                                decimal fulltol = usl - lsl;
+                                decimal tol = fulltol / 2;
+                                decimal incr = tol * 0.1m;
+                                decimal lowest = lsl - incr;
+                                decimal highest = usl + incr;
+                                decimal nominal = lsl + tol;
+                                //ws.Cells["T4"].Value = c1.max_spec;
+                                //ws.Cells["Z4"].Value = ws.Cells["Z4"].Value.ToString() + c1.min_spec;
+                                //ws.Cells["H4"].Value = ws.Cells["H4"].Value.ToString() + highest;
+                                //ws.Cells["N4"].Value = ws.Cells["N4"].Value.ToString() + lowest;
+                                //ws.Cells["A4"].Value = c1.max_spec + c1.min_spec / 2;
+
+                                decimal red_data_1 = lowest;
+                                decimal red_data_2 = highest;
+
+                                decimal perc60 = fulltol * 60 / 100;
+                                decimal perc30 = perc60 / 2;
+
+
+                                decimal green_data_start = nominal - perc30;
+                                decimal green_data_end = nominal + perc30;
+
+                                decimal perc_45 = fulltol * 45 / 100;
+                                decimal yellow_min_start = nominal - perc_45;
+                                decimal yellow_min_end = green_data_start;
+
+                                decimal yellow_max_start = green_data_end;
+                                decimal yellow_max_end = nominal + perc_45;
+
+                                decimal perc_50 = fulltol * 50 / 100;
+                                decimal orange_min_start = nominal - perc_50;
+                                decimal orange_min_end = yellow_min_start;
+
+                                decimal orange_max_start = yellow_max_start;
+                                decimal orange_max_end = nominal + perc_50;
+
+                                for (decimal i = highest; i >= lowest; i -= incr)
+                                {
+                                    Class_PmcSeries c = new Class_PmcSeries
+                                    {
+                                        fullset = i
+                                    };
+                                    if(i!=highest && i!=lowest)
+                                    lstdata.Add(c);
+                                }
+                                // insert rows to the excel
+                               // ws.InsertRow(row, lstdata.Count);
+
+                                // loop through data and fill excel file
+                                foreach (Class_PmcSeries c in lstdata)
+                                {
+                                    ws.Cells["C" + row].Value = c.fullset;
+                                    if (c.fullset == usl)
+                                    {
+                                        //ws.Cells["A" + row].Value = "USL";
+                                        row_usl = row;
+                                    }
+                                    else if (c.fullset == lsl)
+                                    {
+                                        // ws.Cells["A" + row].Value = "LSL";
+                                        row_lsl = row;
+                                    }
+                                    else if (c.fullset == nominal)
+                                    {
+                                        // ws.Cells["A" + row].Value = "MEAN";
+                                        row_mean = row;
+                                    }
+
+                                    row += 2;
+                                }
+                                // delete 2 blank rows after data filled
+                                //ws.DeleteRow(row);
+                                // ws.DeleteRow(row);
+                                //ws.Cells[5 + lstdata.Count + 1, 1].Value = "PROCESS LOG CODE";
+
+                                ws.Cells[6, 3, row, 3].Style.Numberformat.Format = "0.000";
+                                ws.Cells[6, 1, row, 3].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                              //  ws.Cells[row_usl + 1, 1, row_mean - 1, 1].Merge = true;
+                               // ws.Cells[row_mean + 1, 1, row_lsl - 1, 1].Merge = true;
+                               // ws.Cells[row_usl + 1, 1, row_lsl - 1, 1].Value = "(x̅ CHART) Average Chart:\r\n\r\nUpper Control Limit:\r\nUCL=X̿ + A₂R̅\r\nLower Control Limit:\r\nLCL=X̿ - A₂R̅\r\n\r\nHere,\r\n\r\nX̿ = (x̅1+x̅2+…+xn)/n\r\nn= no of x̅\r\nA₂= Constant table value\r\nR̅= (R1+R2+..Rn)/n\r\nn= No of R";
+                                ws.Cells["A6"].Value = " AVERAGE CHART \n (X bar CHART)";
+                                //ws.Cells[5 + lstdata.Count + 35, 1].Value = "F/Q/010 Rev:0";
+                                //string[] cpnumber = c1.cp_number.Split('/');
+                                //ws.Cells[5 + lstdata.Count + 35, 21].Value = cpnumber[1] + cpnumber[2] + " / " + c1.process_no + "/ PMC - Rev No:0";
+                                //ws.Cells[5 + lstdata.Count + 35, 21].Style.WrapText = true;
+                                //ws.Cells[5 + lstdata.Count + 35, 21].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                                //ws.Cells[5 + lstdata.Count + 35, 21].Style.WrapText = true;
+                                //// ws.Row(5 + lstdata.Count + 16).Height = 40;
+
+
+
+                                int currentEndRow = ws.Dimension.End.Row;
+                                ws.Cells["A1:AS" + currentEndRow].Style.Border.Top.Style = ExcelBorderStyle.Hair;
+                                ws.Cells["A1:AS" + currentEndRow].Style.Border.Bottom.Style = ExcelBorderStyle.Hair;
+                                ws.Cells["A1:AS" + currentEndRow].Style.Border.Left.Style = ExcelBorderStyle.Hair;
+                                ws.Cells["A1:AS" + currentEndRow].Style.Border.Right.Style = ExcelBorderStyle.Hair;
+                                ws.PrinterSettings.Orientation = eOrientation.Landscape;
+                                ws.PrinterSettings.PrintArea = ws.Cells["A1:AS" + (currentEndRow)];
+                                countofchars += 1;
+                            }
+                            else if (tol_type == "uni-with-max")
+                            {
+                                List<Class_PmcSeries> lstdata = new List<Class_PmcSeries>();
+
+                                decimal fulltol = c1.max_spec;
+                                decimal tol = c1.max_spec;
+                                decimal incr = tol * 0.1m;
+                                decimal lowest = lsl;
+                                decimal highest = usl + incr;
+                                //ws.Cells["T4"].Value = c1.max_spec;
+                                //ws.Cells["Z4"].Value = ws.Cells["Z4"].Value.ToString() + c1.min_spec;
+                                //ws.Cells["H4"].Value = ws.Cells["H4"].Value.ToString() + highest;
+                                //ws.Cells["N4"].Value = ws.Cells["N4"].Value.ToString() + lowest;
+                                //ws.Cells["A4"].Value = c1.max_spec + c1.min_spec / 2;
+                                decimal red_data_1 = lowest;
+                                decimal red_data_2 = highest;
+
+                                decimal perc60 = fulltol * 60 / 100;
+                                decimal perc30 = fulltol * 90 / 100;
+                                decimal perc10 = fulltol;
+
+                                decimal green_data_start = lsl;
+                                decimal green_data_end = perc60;
+
+                                decimal yellow_min_start = perc60 + incr;
+                                decimal yellow_min_end = perc30;
+
+                                decimal orange_min_start = perc30 + incr;
+                                decimal orange_min_end = perc10;
+
+
+                                for (decimal i = highest; i >= lowest; i -= incr)
+                                {
+                                    Class_PmcSeries c = new Class_PmcSeries
+                                    {
+                                        fullset = i
+                                    };
+                                    if (i != highest && i != lowest)
+                                        lstdata.Add(c);
+                                }
+                                // insert rows to the excel
+                              //  ws.InsertRow(row, lstdata.Count);
+
+                                // loop through data and fill excel file
+                                foreach (Class_PmcSeries c in lstdata)
+                                {
+                                    ws.Cells["C" + row].Value = c.fullset;
+                                    if (c.fullset == usl)
+                                    {
+                                        // ws.Cells["A" + row].Value = "USL";
+                                        row_usl = row;
+                                    }
+                                    else if (c.fullset == lsl)
+                                    {
+                                        // ws.Cells["A" + row].Value = "LSL";
+                                        row_lsl = row;
+                                    }
+
+
+                                    row += 2;
+                                }
+                                // delete 2 blank rows after data filled
+                                // ws.DeleteRow(row);
+                                // ws.DeleteRow(row);
+                                // ws.Cells[5 + lstdata.Count + 1, 1].Value = "PROCESS LOG CODE";
+
+                                ws.Cells[6, 3, row, 3].Style.Numberformat.Format = "0.000";
+                                ws.Cells[6, 1, row, 3].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                                //ws.Cells[row_usl + 1, 1, row_lsl - 1, 1].Merge = true;
+                               // ws.Cells[row_usl + 1, 1, row_lsl - 1, 1].Value = "(x̅ CHART) Average Chart:\r\n\r\nUpper Control Limit:\r\nUCL=X̿ + A₂R̅\r\nLower Control Limit:\r\nLCL=X̿ - A₂R̅\r\n\r\nHere,\r\n\r\nX̿ = (x̅1+x̅2+…+xn)/n\r\nn= no of x̅\r\nA₂= Constant table value\r\nR̅= (R1+R2+..Rn)/n\r\nn= No of R";
+                                ws.Cells["A6"].Value = " AVERAGE CHART \n (X bar CHART)";
+
+
+                                //ws.Cells[5 + lstdata.Count + 35, 1].Value = "F/Q/010 Rev: 0";
+                                //string[] cpnumber = c1.cp_number.Split('/');
+                                //ws.Cells[5 + lstdata.Count + 35, 21].Value = cpnumber[1] + cpnumber[2] + " / " + c1.process_no + "/ PMC - Rev No:0";
+                                //ws.Cells[5 + lstdata.Count + 35, 21].Style.WrapText = true;
+                                //ws.Cells[5 + lstdata.Count + 35, 21].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                                //ws.Cells[5 + lstdata.Count + 35, 21].Style.WrapText = true;
+                                //  ws.Row(5 + lstdata.Count + 16).Height = 40;
+
+
+                                int currentEndRow = ws.Dimension.End.Row;
+                                ws.Cells["A1:AS" + currentEndRow].Style.Border.Top.Style = ExcelBorderStyle.Hair;
+                                ws.Cells["A1:AS" + currentEndRow].Style.Border.Bottom.Style = ExcelBorderStyle.Hair;
+                                ws.Cells["A1:AS" + currentEndRow].Style.Border.Left.Style = ExcelBorderStyle.Hair;
+                                ws.Cells["A1:AS" + currentEndRow].Style.Border.Right.Style = ExcelBorderStyle.Hair;
+                                ws.PrinterSettings.Orientation = eOrientation.Landscape;
+                                ws.PrinterSettings.PrintArea = ws.Cells["A1:AS" + (currentEndRow)];
+                                countofchars += 1;
+                            }
+
+                        }
+
+                        xlPackage.Save();
+                        string pdfname = fname.Replace(".xlsx", ".pdf");
+                        var ret = ConvertXlstoPdf(fname, pdfname);
+                        return pdfname;
+
+                    }
+
+                }
+                else
+                    return "";
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(" Error in generating control plan: " + ex.ToString());
+            return JsonConvert.SerializeObject(new { Message = ex.Message });
+        }
+
+    }
+
+
+
+    [WebMethod]
+    public string GenerateControlChart1(int partsl, int oprnsl)
+    {
+        try
+        {
+            string fname = "cc_" + partsl + "_" + oprnsl + ".xlsx";
+            string filepath = "~/pdftemp/" + fname;
+            FileInfo excelFile = new FileInfo(Server.MapPath(filepath));
+            FileInfo templateFile = new FileInfo(Server.MapPath("~/App_Data/ControlChartTemplate.xlsx"));
+
+            string sql = @"SELECT  c.cp_slno FROM controlplan c where c.rev_no =(SELECT MAX(p.rev_no ) from controlplan p WHERE " +
+                        "p.Submitstatus='A' and p.Obsolete='N' AND c.part_slno=p.part_slno and c.operation_slno=p.operation_slno AND c.machine_slno=p.machine_slno ) and c.part_slno=" + partsl + " and c.operation_slno= " + oprnsl + "";
+
+            string cp_slno = string.Empty;
+            using (Database db = new Database("connString"))
+            {
+                cp_slno = db.ExecuteScalar<string>(sql);
+                db.Execute(";exec SP_Temp_RptControlPlan @@cp_slno=@0,@@part_slno=@1, @@oper_slno=@2", cp_slno, partsl, oprnsl);
+                string sqlcp = @"Select * from temp_rptControlPlan  where methodDesc2='PMC' " +
+                       " and (product_char <>'-' or product_char  <>'')" +
+                       "-- tr inner join SampleFrequency sf on sf.freq_slno =tr.freq_slno ";
+                //   "-- where sf.pmc=1" +
+                //      "-- where tr.product_char='" + charsl + "'";
+                List<Class_Temp_RptControlPlan> lst = db.Fetch<Class_Temp_RptControlPlan>(sqlcp);
+                if (lst.Count > 0)
+                {
+                    using (ExcelPackage xlPackage = new ExcelPackage(excelFile, templateFile))
+                    {
+                        int countofchars = 0;
+                        double xlrowht = 50;
+                        foreach (Class_Temp_RptControlPlan c1 in lst)
+                        {
+
+                            countofchars++;
+                            Copy(xlPackage.Workbook, xlPackage.Workbook.Worksheets[countofchars].Name, "Sheet_" + countofchars);
+
+                        }
+                        xlPackage.Workbook.Worksheets.Delete(1);
+                        //xlPackage.Workbook.Worksheets.Delete("Controlchart");
+                        int cn = xlPackage.Workbook.Worksheets.Count;
+                        countofchars = 1;
+                        foreach (Class_Temp_RptControlPlan c1 in lst)
+                        {
+
+                            string sqlmachinecode = @"select machinecode from machines where machine_slno=@0";
+                            string mach = db.ExecuteScalar<string>(sqlmachinecode, c1.machine_slno);
+                            string sqleval = @"select evalTech FROM [mei_controlplan].[dbo].[EvaluationTech] where evalTech_slno=@0";
+                            string eval = db.ExecuteScalar<string>(sqleval, c1.evalTech_slno2);
+
+                            string sqlSpclChar = @"select splCharFile from SpecialChars where splChar_slno= @0";
+                            string splchar = db.ExecuteScalar<string>(sqlSpclChar, c1.splChar_slno);
+                            string spl = string.Empty;
+                            if (!string.IsNullOrWhiteSpace(splchar))
+                            {
+                                if (splchar.Contains("QCC") || splchar.Contains("-"))
+                                {
+                                    string[] name = splchar.Split('-');
+                                    string[] secpart = name[1].Split('.');
+                                    spl = secpart[0] + " - " + name[0];
+                                }
+                                else
+                                {
+                                    string[] secpart = splchar.Split('.');
+                                    spl = secpart[0];
+                                }
+                            }
+                            
+                            ExcelWorksheet ws = xlPackage.Workbook.Worksheets["Sheet_" + countofchars];
+                            ws.Row(2).Height = 60;                          
+                            ws.Cells["A2"].Value = "Part No : " + c1.mstPartNo + " / " + c1.partIssueNo + " - " + c1.partIssueDt.Replace('/', '.');
+                            ws.Cells["A3"].Value = "Part Name: " + c1.PartDescription;
+                            ws.Cells["H2"].Value = "Description: " + c1.product_char;
+                            ws.Cells["H2"].Style.WrapText = true;
+                            ws.Cells["H3"].Value = "Specification: " + c1.spec1;
+                            ws.Cells["R2"].Value = "Process: " + c1.OperationDesc;
+                            ws.Cells["R2"].Style.WrapText= true;
+                            ws.Cells["R3"].Value = "Process No: " + c1.process_no;
+                            ws.Cells["Z2"].Value = "Instrument: "+eval;
+                            ws.Cells["Z2"].Style.WrapText = true;
+                            ws.Cells["Z3"].Value = "Least Count:0.001 ";
+                            ws.Cells["AI2"].Value = "Machine Code/Name: " + mach + " / "+c1.MachineDesc;
+                            ws.Cells["AI2"].Style.WrapText = true;
+                            ws.Cells["AI3"].Value = "Spl. Char:" + spl;
+
+
+
+
+                            int currentEndRow = ws.Dimension.End.Row;
+                            //ws.Cells["A1:AS" + currentEndRow].Style.Border.Top.Style = ExcelBorderStyle.Hair;
+                            //ws.Cells["A1:AS" + currentEndRow].Style.Border.Bottom.Style = ExcelBorderStyle.Hair;
+                            //ws.Cells["A1:AS" + currentEndRow].Style.Border.Left.Style = ExcelBorderStyle.Hair;
+                            //ws.Cells["A1:AS" + currentEndRow].Style.Border.Right.Style = ExcelBorderStyle.Hair;
+                            ws.PrinterSettings.Orientation = eOrientation.Landscape;
+                            ws.PrinterSettings.PrintArea = ws.Cells["A1:AS" + (currentEndRow)];
+
+                            countofchars++;
+                        
+                        }
+
+                        xlPackage.Save();
+                        string pdfname = fname.Replace(".xlsx", ".pdf");
+                        var ret = ConvertXlstoPdf(fname, pdfname);
+                        return pdfname;
+
+                    }
+
+                }
+                else
+                    return "";
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(" Error in generating control plan: " + ex.ToString());
+            return JsonConvert.SerializeObject(new { Message = ex.Message });
+        }
+
+    }
+
+    [WebMethod]
+    public string CheckCPNumberExists(string cpnumber)
+    {
+        string sql = "SELECT COUNT(*) AS cnt FROM parts WHERE cp_number = @0";
+        using (Database db = new Database("connString"))
+        {
+            int cnt = db.ExecuteScalar<int>(sql, cpnumber);
+            string result = (cnt > 0) ? "exists" : "not exists";
+
+            // Convert the result to a JSON object
+            var response = new { result = result };
+
+            JavaScriptSerializer serializer = new JavaScriptSerializer();
+            return serializer.Serialize(response);
+        }
+    }
+
+    [WebMethod]
+    public string GenerateLayoutInsp(int partsl, int oprnsl)
+    {
+        try
+        {
+            int imgno = 0;
+            string fname = "layout_" + partsl + "_" + oprnsl + ".xlsx";
+            string filepath = "~/pdftemp/" + fname;
+            FileInfo excelFile = new FileInfo(Server.MapPath(filepath));
+            FileInfo templateFile = new FileInfo(Server.MapPath("~/App_Data/LayoutInspectionTemplate.xlsx"));
+            string sql = @"SELECT  c.cp_slno FROM controlplan c where c.rev_no =(SELECT MAX(p.rev_no ) from controlplan p WHERE " +
+                       " p.Submitstatus='A' and p.Obsolete='N' AND c.part_slno=p.part_slno and c.operation_slno=p.operation_slno AND c.machine_slno=p.machine_slno ) and c.part_slno=" + partsl + " and c.operation_slno= " + oprnsl + "";
+            string sqlrevdtls = @"SELECT rev_no, rev_date, rev_reason FROM controlplan c
+                                  where c.part_slno =" + partsl + " and c.operation_slno= " + oprnsl + "";
+            string sqllegend = @"select distinct Top 4 sp.splCharFile,spl_char_desc FROM[SpecialChars] sp inner join                             [mei_controlplan].[dbo].[customers] c on
+                                c.cust_slno = sp.cust_slno inner join parts p on p.Customer_name = c.cust_name
+                                inner join ControlPlan cp on cp.part_slno = p.part_slno
+                                where cp.part_slno =" + partsl + " and cp.operation_slno =" + oprnsl + " and       sp.show_in_legend = 1";
+            Logger.LogError(sql);
+            string cp_slno = string.Empty;
+            using (Database db = new Database("connString"))
+            {
+                cp_slno = db.ExecuteScalar<string>(sql);
+                db.Execute(";exec SP_Temp_RptControlPlan @@cp_slno=@0,@@part_slno=@1, @@oper_slno=@2", cp_slno, partsl, oprnsl);
+                List<Class_ControlPlan> lstrev = db.Fetch<Class_ControlPlan>(sqlrevdtls);
+                string sqlcp = @"Select * from temp_rptControlPlan";
+                List<Class_Temp_RptControlPlan> lst = db.Fetch<Class_Temp_RptControlPlan>(sqlcp);
+                List<Class_SpecialChars> lstlegend = db.Fetch<Class_SpecialChars>(sqllegend);
+                if (lst.Count > 0)
+                {
+                    double xlrowht = 90;
+                    using (ExcelPackage xlPackage = new ExcelPackage(excelFile, templateFile))
+                    {
+                        ExcelWorksheet ws = xlPackage.Workbook.Worksheets[1];
+
+                        ws.Cells[2, 1].Value = "Part Name: " + lst[0].PartDescription;
+                        ws.Cells[2, 4].Value = "Revision Status: ";
+                        ws.Cells[2, 7].Value = "Date: ";
+                        ws.Cells[3, 1].Value = "Part No: " + lst[0].mstPartNo;
+                        ws.Cells[3, 4].Value = "Customer: " + lst[0].Customer_name;
+                        int row = 6;
+                        ws.InsertRow(row, lst.Count);
+                        string imgPath = Server.MapPath("~/Documents/");
+                        int no = 1;
+                        int index = (row + (lst.Count - 1) + 1);
+                        int legendcount = lstlegend.Count;
+                        if (lstlegend.Count > 0)
+                        {
+                            if (!string.IsNullOrWhiteSpace(lstlegend[0].splCharFile))
+                            {
+                                addimage(lstlegend[0].splCharFile, index, 1, ws, "0");
+                                ws.Cells[index, 1].Value = lstlegend[0].spl_char_desc;
+                            }
+                            if (lstlegend.Count > 1)
+                            {
+                                if (!string.IsNullOrWhiteSpace(lstlegend[1].splCharFile))
+                                {
+                                    addimage(lstlegend[1].splCharFile, index, 6, ws, "1");
+                                    ws.Cells[index, 6].Value = lstlegend[1].spl_char_desc;
+                                }
+                            }
+                        }
+                        ws.Cells[index + 1, 1].Value = "Inspected By: " + lst[0].preparedBy;
+                        ws.Cells[index + 1, 6].Value = "Approved By: " + lst[0].approvedBy;
+                        foreach (Class_Temp_RptControlPlan c in lst)
+                        {
+                            ws.Cells[row, 1].Value = no.ToString();
+                            ws.Cells[row, 2].Value = c.product_char;
+                            ws.Cells[row, 4].Value = c.spec1;
+                            //ws.Cells[row, 4].Value = c.proc_spec;
+                            ws.Cells[row, 4].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                            ws.Cells[row, 4].Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Top;
+                            ws.Cells[row, 4].Style.WrapText = true;
+                            ws.Cells[row, 5].Value = c.measurementTech;
+                            ws.Row(row).Height = 50;
+                            if (c.splChar_slno > 0)
+                            {
+                                string img = GetFileName(c.splChar_slno.ToString());
+                                string pth = (imgPath + img);
+                                FileInfo imgFile = new FileInfo(pth);
+                                if (imgFile.Exists)
+                                {
+                                    imgno += 1;
+                                    Bitmap image = new Bitmap(pth);
+                                    ExcelPicture excelPicture = ws.Drawings.AddPicture("PictureName" + imgno, image);
+                                    ExcelRangeBase cell = ws.Cells[row - 1, 2];
+                                    excelPicture.SetPosition(cell.Start.Row, 10, cell.Start.Column, 13);
+                                    excelPicture.SetSize(40, 40);
+                                }
+                            }
+                            row += 1;
+                            no++;
+                        }
+                        //ws.Cells["A16:K"+row].Style.Border.Top.Style = ExcelBorderStyle.Thick;
+                        ws.Cells["A6:K" + row].Style.Border.Right.Style = ExcelBorderStyle.Thin;
+                        ws.Cells["A6:K" + row].Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
+                        ws.Cells["A6:K" + row].Style.Border.Left.Style = ExcelBorderStyle.Thin;
+                        ws.Cells["A6:K" + row].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                        // set the print area                       
+                        int newRowCount = ws.Dimension.End.Row + 1;
+                        int currentEndRow = newRowCount;
+                        ws.PrinterSettings.Orientation = eOrientation.Landscape;
+                        ws.PrinterSettings.PrintArea = ws.Cells["A1:T" + currentEndRow];
+                        xlPackage.SaveAs(excelFile);
+                        string pdfname = fname.Replace(".xlsx", ".pdf");
+                        var ret = ConvertXlstoPdf(fname, pdfname);
+                        return pdfname;
+                    }
+                }
+                return "";
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(" Error in generating control plan: " + ex.ToString());
+            return JsonConvert.SerializeObject(new { Message = ex.Message });
+        }
+    }
+
+    [WebMethod]
+    [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+    public string GetLegendCount(string custsl)
+    {
+        string sql = "select count(*) as cnt from specialchars where cust_slno=@0 and show_in_legend=@1";
+        using (Database db = new Database("connString"))
+        {
+            int cnt = db.ExecuteScalar<int>(sql, custsl, true);
+            return cnt.ToString();
+        }
+    }
+
+    [WebMethod]
+    [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+    public string CheckPartNoExists(string mstpartno)
+    {
+        string sql = "select count(*) as cnt from parts where mstpartno=@0 and del_status=@1";
+        using (Database db = new Database("connString"))
+        {
+            int cnt = db.ExecuteScalar<int>(sql, mstpartno, "N");
+            return cnt.ToString();
+        }
+    }
+
+    [WebMethod]
+    [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+    public string GetPartRevHistory(string partsl)
+    {
+        using (Crud_part_revision_history crud = new Crud_part_revision_history())
+        {
+            List<Class_part_revision_history> lst = crud.SelectAll().Where(x => x.part_slno == Convert.ToInt32(partsl)).ToList();
+            return JsonConvert.SerializeObject(lst);
+        }
+    }
+
+}

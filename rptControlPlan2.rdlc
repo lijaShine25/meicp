@@ -1,0 +1,446 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2008/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <Body>
+    <Height>2in</Height>
+    <Style />
+  </Body>
+  <Width>11.33333in</Width>
+  <Page>
+    <PageHeader>
+      <Height>24.04289cm</Height>
+      <PrintOnFirstPage>true</PrintOnFirstPage>
+      <PrintOnLastPage>true</PrintOnLastPage>
+      <ReportItems>
+        <Textbox Name="Textbox13">
+          <CanGrow>true</CanGrow>
+          <KeepTogether>true</KeepTogether>
+          <Paragraphs>
+            <Paragraph>
+              <TextRuns>
+                <TextRun>
+                  <Value>CONTROL PLAN</Value>
+                  <Style>
+                    <FontSize>20pt</FontSize>
+                    <FontWeight>Bold</FontWeight>
+                  </Style>
+                </TextRun>
+              </TextRuns>
+              <Style>
+                <TextAlign>Center</TextAlign>
+              </Style>
+            </Paragraph>
+          </Paragraphs>
+          <rd:DefaultName>Textbox13</rd:DefaultName>
+          <Top>0.29104cm</Top>
+          <Left>3.26111cm</Left>
+          <Height>1.13896cm</Height>
+          <Width>25.52555cm</Width>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+            <PaddingLeft>2pt</PaddingLeft>
+            <PaddingRight>2pt</PaddingRight>
+            <PaddingTop>2pt</PaddingTop>
+            <PaddingBottom>2pt</PaddingBottom>
+          </Style>
+        </Textbox>
+        <Image Name="Image1">
+          <Source>Embedded</Source>
+          <Value>logo</Value>
+          <Sizing>Fit</Sizing>
+          <Height>1.43cm</Height>
+          <Width>3.12cm</Width>
+          <ZIndex>1</ZIndex>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+          </Style>
+        </Image>
+        <Textbox Name="Textbox6">
+          <CanGrow>true</CanGrow>
+          <KeepTogether>true</KeepTogether>
+          <Paragraphs>
+            <Paragraph>
+              <TextRuns>
+                <TextRun>
+                  <Value>Production</Value>
+                  <Style />
+                </TextRun>
+              </TextRuns>
+              <Style />
+            </Paragraph>
+          </Paragraphs>
+          <rd:DefaultName>Textbox2</rd:DefaultName>
+          <Top>1.53583cm</Top>
+          <Left>13.32239cm</Left>
+          <Height>0.79cm</Height>
+          <Width>4.7625cm</Width>
+          <ZIndex>2</ZIndex>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+            <VerticalAlign>Middle</VerticalAlign>
+          </Style>
+        </Textbox>
+        <Image Name="Image4">
+          <Source>External</Source>
+          <Value>=Parameters!ImagePath3.Value</Value>
+          <Sizing>Fit</Sizing>
+          <Top>0.60744in</Top>
+          <Left>4.77539in</Left>
+          <Height>0.31102in</Height>
+          <Width>0.4252in</Width>
+          <ZIndex>3</ZIndex>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+          </Style>
+        </Image>
+        <Textbox Name="Textbox4">
+          <CanGrow>true</CanGrow>
+          <KeepTogether>true</KeepTogether>
+          <Paragraphs>
+            <Paragraph>
+              <TextRuns>
+                <TextRun>
+                  <Value>Pre - Launch</Value>
+                  <Style />
+                </TextRun>
+              </TextRuns>
+              <Style />
+            </Paragraph>
+          </Paragraphs>
+          <rd:DefaultName>Textbox2</rd:DefaultName>
+          <Top>1.54289cm</Top>
+          <Left>7.25764cm</Left>
+          <Height>0.79cm</Height>
+          <Width>4.7625cm</Width>
+          <ZIndex>4</ZIndex>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+            <VerticalAlign>Middle</VerticalAlign>
+          </Style>
+        </Textbox>
+        <Image Name="Image3">
+          <Source>External</Source>
+          <Value>=Parameters!ImagePath2.Value</Value>
+          <Sizing>Fit</Sizing>
+          <Top>0.60744in</Top>
+          <Left>2.3877in</Left>
+          <Height>0.31102in</Height>
+          <Width>0.4252in</Width>
+          <ZIndex>5</ZIndex>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+          </Style>
+        </Image>
+        <Textbox Name="Textbox2">
+          <CanGrow>true</CanGrow>
+          <KeepTogether>true</KeepTogether>
+          <Paragraphs>
+            <Paragraph>
+              <TextRuns>
+                <TextRun>
+                  <Value>Proto Type</Value>
+                  <Style />
+                </TextRun>
+              </TextRuns>
+              <Style />
+            </Paragraph>
+          </Paragraphs>
+          <rd:DefaultName>Textbox2</rd:DefaultName>
+          <Top>1.53583cm</Top>
+          <Left>1.19289cm</Left>
+          <Height>0.79cm</Height>
+          <Width>4.7625cm</Width>
+          <ZIndex>6</ZIndex>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+            <VerticalAlign>Middle</VerticalAlign>
+          </Style>
+        </Textbox>
+        <Image Name="Image2">
+          <Source>External</Source>
+          <Value>=Parameters!ImagePath1.Value</Value>
+          <Sizing>Fit</Sizing>
+          <Top>0.60466in</Top>
+          <Height>0.79cm</Height>
+          <Width>1.08cm</Width>
+          <ZIndex>7</ZIndex>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+          </Style>
+        </Image>
+        <Line Name="Line1">
+          <Top>2.40344cm</Top>
+          <Height>0cm</Height>
+          <Width>28.78667cm</Width>
+          <ZIndex>8</ZIndex>
+          <Style>
+            <Border>
+              <Style>Solid</Style>
+            </Border>
+          </Style>
+        </Line>
+      </ReportItems>
+      <Style>
+        <Border>
+          <Style>None</Style>
+        </Border>
+      </Style>
+    </PageHeader>
+    <PageHeight>21cm</PageHeight>
+    <PageWidth>29.7cm</PageWidth>
+    <LeftMargin>0.8cm</LeftMargin>
+    <RightMargin>0.8cm</RightMargin>
+    <TopMargin>1cm</TopMargin>
+    <BottomMargin>1cm</BottomMargin>
+    <ColumnSpacing>0.13cm</ColumnSpacing>
+    <Style />
+  </Page>
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="mstl_controlplanDataSet">
+      <ConnectionProperties>
+        <DataProvider>System.Data.DataSet</DataProvider>
+        <ConnectString>/* Local Connection */</ConnectString>
+      </ConnectionProperties>
+      <rd:DataSourceID>ef095966-13ad-4002-8932-5597abf55705</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="DataSet1">
+      <Query>
+        <DataSourceName>mstl_controlplanDataSet</DataSourceName>
+        <CommandText>/* Local Query */</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="Pk_Id">
+          <DataField>Pk_Id</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="cp_slno">
+          <DataField>cp_slno</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="mstPartNo">
+          <DataField>mstPartNo</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="partIssueNo">
+          <DataField>partIssueNo</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="partIssueDt">
+          <DataField>partIssueDt</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="keyContact">
+          <DataField>keyContact</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="keyContactPhone">
+          <DataField>keyContactPhone</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="organization">
+          <DataField>organization</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="orgApprovalDt">
+          <DataField>orgApprovalDt</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="orgDate">
+          <DataField>orgDate</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="originalDt">
+          <DataField>originalDt</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="rev_no">
+          <DataField>rev_no</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="Date">
+          <DataField>Date</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="customerPartNo">
+          <DataField>customerPartNo</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="customerIssueNo">
+          <DataField>customerIssueNo</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="customerIssueDt">
+          <DataField>customerIssueDt</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="CFTeamName">
+          <DataField>CFTeamName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="custApproval">
+          <DataField>custApproval</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="custApprovalDt">
+          <DataField>custApprovalDt</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Customer_name">
+          <DataField>Customer_name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="PartDescription">
+          <DataField>PartDescription</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="custQaApproval">
+          <DataField>custQaApproval</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="custQaApprovalDt">
+          <DataField>custQaApprovalDt</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="operation_slno">
+          <DataField>operation_slno</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="OperationDesc">
+          <DataField>OperationDesc</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="MachineDesc">
+          <DataField>MachineDesc</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="otherApproval">
+          <DataField>otherApproval</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="otherApprovalDt">
+          <DataField>otherApprovalDt</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="dimn_no">
+          <DataField>dimn_no</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="product_char">
+          <DataField>product_char</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="process_char">
+          <DataField>process_char</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="splChar_slno">
+          <DataField>splChar_slno</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="tol_min">
+          <DataField>tol_min</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="tol_max">
+          <DataField>tol_max</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="measurementTech">
+          <DataField>measurementTech</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="gaugeCode">
+          <DataField>gaugeCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="sampleSize">
+          <DataField>sampleSize</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="sampleFreq">
+          <DataField>sampleFreq</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="res">
+          <DataField>res</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="methodDesc">
+          <DataField>methodDesc</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="reactionPlan">
+          <DataField>reactionPlan</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="preparedBy">
+          <DataField>preparedBy</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="approvedBy">
+          <DataField>approvedBy</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="rev_date">
+          <DataField>rev_date</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+      <rd:DataSetInfo>
+        <rd:DataSetName>mstl_controlplanDataSet</rd:DataSetName>
+        <rd:SchemaPath>F:\All Live Projects\Motherson_Pondy\ControlPlan\mstl_ControlPlan_Source_4_2\App_Code\mstl_controlplanDataSet.xsd</rd:SchemaPath>
+        <rd:TableName>Temp_RptControlPlan</rd:TableName>
+        <rd:TableAdapterFillMethod>Fill</rd:TableAdapterFillMethod>
+        <rd:TableAdapterGetDataMethod>GetData</rd:TableAdapterGetDataMethod>
+        <rd:TableAdapterName>Temp_RptControlPlanTableAdapter</rd:TableAdapterName>
+      </rd:DataSetInfo>
+    </DataSet>
+  </DataSets>
+  <ReportParameters>
+    <ReportParameter Name="ImagePath1">
+      <DataType>String</DataType>
+      <Prompt>ReportParameter1</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="ImagePath2">
+      <DataType>String</DataType>
+      <Prompt>ReportParameter1</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="ImagePath3">
+      <DataType>String</DataType>
+      <Prompt>ReportParameter1</Prompt>
+    </ReportParameter>
+  </ReportParameters>
+  <EmbeddedImages>
+    <EmbeddedImage Name="logo">
+      <MIMEType>image/jpeg</MIMEType>
+      <ImageData>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</ImageData>
+    </EmbeddedImage>
+  </EmbeddedImages>
+  <rd:ReportUnitType>Cm</rd:ReportUnitType>
+  <rd:ReportID>e3aac5f0-c7c8-4746-84e2-ffd820c2f004</rd:ReportID>
+</Report>

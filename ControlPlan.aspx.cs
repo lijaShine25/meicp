@@ -1,0 +1,654 @@
+using Newtonsoft.Json;
+using NPoco;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class ControlPlan : System.Web.UI.Page
+{
+      public enum MessageType { Success, Error, Info, Warning };
+      List<Class_Employees> userInfo = null;
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        using (Database db = new Database("connString"))
+        {
+            if (ddloperation_slno.SelectedIndex > 0 && ddlpart_slno.SelectedIndex > 0)
+            {
+                var x = db.Query<Class_machines>("select * FROM machines m, partsmapping p where p.machine_slno =m.machine_slno and p.part_slno=@0 and p.operation_slno =@1", Convert.ToInt32(ddlpart_slno.SelectedValue), Convert.ToInt32(ddloperation_slno.SelectedValue));
+                ddlmachine_slno.Items.Clear();
+                ddlmachine_slno.DataSource = x;
+                ddlmachine_slno.DataTextField = "MachineDesc";
+                ddlmachine_slno.DataValueField = "machine_slno";
+                ddlmachine_slno.DataBind();
+
+                ddlmachine_slno.SelectedIndex = 0;
+                ddlmachine_slno.Enabled = false;
+            }
+        }
+
+        userInfo = (List<Class_Employees>)Session["UserInfo"];
+        if (userInfo == null)
+        {
+            Response.Redirect("~/LoginPage.aspx");
+        }
+
+        if (userInfo[0].isAdmin != "Y" && userInfo[0].CanPrepare != "Y" && userInfo[0].CanApprove != "Y")
+        {
+            Response.Redirect("~/AccessDenied.aspx");
+        }
+        hdnemplslno.Value = userInfo[0].EmployeeSlNo.ToString();
+        hdnuser.Value = userInfo[0].CanApprove;
+        if (!Page.IsPostBack)
+        {
+            LoadParts();
+           
+           if (Request.QueryString.HasKeys())
+            {               
+                hdnSlNo.Value = Request.QueryString["slno"];
+                string submitst = GetSubmitStat(hdnSlNo.Value);
+                if (userInfo[0].isAdmin == "Y" || userInfo[0].CanApprove == "Y")
+                {
+                    if (submitst == "Y")
+                    {
+                        btnApproved.Enabled = true;
+                    }
+
+                    if (submitst == "A")
+                    {
+                        btnirev.Enabled = true;
+                    }
+                }
+                //if (userInfo[0].CanPrepare == "Y")
+                //{
+                //    btnSubmit.Enabled = false;
+                //}
+                //else 
+                //{
+                //    btnSubmit.Enabled = true;                
+                //}
+
+                btnSubmit.Enabled = true;
+                if (userInfo[0].CanApprove == "Y")
+                {
+                    btnSave.Enabled = true;
+                }
+                hdnEditMode.Value = "E";
+               // GetDetails();
+                LoadData();
+                btnDelete.Enabled = true;
+            }
+            else
+            {
+                btnDelete.Enabled = false;
+            }
+        }
+    }
+    void LoadParts()
+    {
+        Crud_parts crud = new Crud_parts();
+        List<Class_parts> lst = null;     
+
+        if (hdnEditMode.Value == "I")
+        {
+            lst = crud.usp_partsSelect().ToList().Where(x => x.del_status == "ACTIVE" && x.Obsolete == "N").ToList();
+            //lst = crud.usp_partsSelect().ToList().Where(x => x.Obsolete == "N").ToList();
+            //lst = crud.usp_partsSelect().ToList();
+
+        }
+        else if (hdnEditMode.Value == "E")
+        {
+            lst = crud.usp_partsSelect().ToList();
+        }              
+        ddlpart_slno.Items.Clear();
+
+        for (int cnt = 0; cnt < lst.Count; cnt++)
+        {
+            ddlpart_slno.Items.Add(new ListItem(lst[cnt].mstPartNo, Convert.ToString(lst[cnt].part_slno)));
+        }
+
+        ddlpart_slno.Items.Insert(0, "Select...");
+
+    }
+    void LoadData() {
+
+        using (Crud_ControlPlan cp = new Crud_ControlPlan()) {
+
+            Class_ControlPlan c= cp.usp_ControlPlanSelect().Where(x => x.cp_slno == Convert.ToInt32(hdnSlNo.Value)).FirstOrDefault();
+            ListItem ctlst = ddlcpType.Items.FindByText(c.cpType);
+            if (ctlst != null) {
+                ddlcpType.SelectedIndex = ddlcpType.Items.IndexOf(ctlst);
+            }
+            ListItem li = ddlpart_slno.Items.FindByValue(c.part_slno.ToString());
+            if (li != null)
+            {
+                ddlpart_slno.SelectedIndex = ddlpart_slno.Items.IndexOf(li);
+                LoadOperationsFromparts();
+
+                ListItem oli = ddloperation_slno.Items.FindByValue(c.operation_slno.ToString());
+                if (oli != null) {
+                    ddloperation_slno.SelectedIndex = ddloperation_slno.Items.IndexOf(oli);
+                }
+
+                LoadMachinesFromparts();
+
+                ListItem mli = ddlmachine_slno.Items.FindByValue(c.machine_slno.ToString());
+                if (mli != null) {
+                    ddlmachine_slno.SelectedIndex = ddlmachine_slno.Items.IndexOf(mli);
+                }
+            }
+
+            hdnsubmitstatus.Value = c.Submitstatus;
+
+        }
+
+    }
+    void LoadOperationsFromparts() {
+
+        using (Database db = new Database("connString")) {
+            if (ddlpart_slno.SelectedIndex > 0)
+            {
+                var x = db.Query<Class_operations>("select * FROM operations o,partsmapping p where p.operation_slno=o.operation_slno AND o.del_status = 'N' AND p.part_slno=@0", Convert.ToInt32(ddlpart_slno.SelectedValue));
+                ddloperation_slno.Items.Clear();
+                ddloperation_slno.DataSource = x;
+                ddloperation_slno.DataTextField = "OperationDesc";
+                ddloperation_slno.DataValueField = "operation_slno";
+                ddloperation_slno.DataBind();
+
+                ddloperation_slno.Items.Insert(0, new ListItem("Select", "0"));
+
+                // load control plan type
+                string cpType = db.ExecuteScalar<string>("select cptype from parts where part_slno=@0", Convert.ToInt16(ddlpart_slno.SelectedValue));
+                ddlcpType.SelectedValue = cpType;
+                ddlcpType.Enabled = false;
+                hdnCpType.Value = cpType;
+            }
+        }
+    }
+
+    void LoadMachinesFromparts()
+    {
+
+        using (Database db = new Database("connString"))
+        {
+            if (ddloperation_slno.SelectedIndex > 0 && ddlpart_slno.SelectedIndex > 0)
+            {
+                var x = db.Query<Class_machines>("select * FROM machines m, partsmapping p where p.machine_slno =m.machine_slno and p.part_slno=@0 and p.operation_slno =@1", Convert.ToInt32(ddlpart_slno.SelectedValue), Convert.ToInt32(ddloperation_slno.SelectedValue));
+              
+                ddlmachine_slno.DataSource = x;
+                ddlmachine_slno.DataTextField = "MachineDesc";
+                ddlmachine_slno.DataValueField = "machine_slno";
+                ddlmachine_slno.DataBind();
+
+                ddlmachine_slno.SelectedIndex = 0;
+                ddlmachine_slno.Enabled = false;
+            }
+        }
+    }
+
+    //void LoadMachinesFromparts()
+    //void  LoadProcessNumFromMapping()
+    //{
+    //    using (Database db = new Database("connString"))
+    //    {
+    //        if (ddloperation_slno.SelectedIndex > 0 && ddlpart_slno.SelectedIndex > 0)
+    //        {
+    //            string PrNo = db.ExecuteScalar<string>("select PM.process_no FROM parts P, partsmapping PM where P.part_slno =PM.part_slno and P.part_slno=@0 and PM.operation_slno =@1", Convert.ToInt32(ddlpart_slno.SelectedValue), Convert.ToInt32(ddloperation_slno.SelectedValue));
+    //            hdnProcessNo.Value = PrNo;
+                
+    //        }
+    //    }
+    //}
+    void LoadOperations()
+    {
+
+        Crud_operations crud = new Crud_operations();
+        List<Class_operations> lst = null;
+        if (hdnEditMode.Value == "I")
+        {
+            lst = crud.usp_operationsSelect().ToList().Where(x => x.del_status == "N").ToList(); ;
+        }
+        else if (hdnEditMode.Value == "E")
+        {
+            lst = crud.usp_operationsSelect().ToList();
+        }
+
+        
+        ddloperation_slno.Items.Clear();
+
+        for (int cnt = 0; cnt < lst.Count; cnt++)
+        {
+            ddloperation_slno.Items.Add(new ListItem(lst[cnt].OperationDesc, Convert.ToString(lst[cnt].operation_slno)));
+        }
+
+        ddloperation_slno.Items.Insert(0, "Select...");
+
+    }
+    void LoadMachines()
+    {
+
+        Crud_machines crud = new Crud_machines();
+         List<Class_machines> lst =null;
+        if (hdnEditMode.Value == "I")
+        {
+            lst = crud.usp_machinesSelect().ToList().Where(x => x.del_status == "N").ToList(); ;
+        }
+        else if (hdnEditMode.Value == "E")
+        {
+            lst = crud.usp_machinesSelect().ToList();
+        }      
+        ddlmachine_slno.Items.Clear();
+
+        for (int cnt = 0; cnt < lst.Count; cnt++)
+        {
+            ddlmachine_slno.Items.Add(new ListItem(lst[cnt].MachineDesc, Convert.ToString(lst[cnt].machine_slno)));
+        }
+
+        ddlmachine_slno.Items.Insert(0, "Select...");
+
+    }
+   
+
+    protected void btnDelete_Click(object sender, EventArgs e)
+    {
+        DeleteData();
+        ShowMessage("Records Deleted Successfully", MessageType.Success);
+       // LoadGridData();
+        ClearData();
+    }
+    protected void btnClear_Click(object sender, EventArgs e)
+    {
+        ClearData();
+    }
+
+    void ClearData()
+    {
+        //txtMachineCode.Text = string.Empty;
+        //txtMachineDesc.Text = string.Empty;
+        //ddloperation_slno.SelectedIndex = 0;
+        //hdnMode.Value = "I";
+        hdnSlNo.Value = "";
+        hdnProcessNo.Value = "";
+        //LoadGridData();
+        hdnsubmitstatus.Value = "N";
+        hdnEditMode.Value = "I";
+        btnSubmit.Enabled = false;
+        btnDelete.Enabled = false;
+        ddlmachine_slno.SelectedIndex = 0;
+        ddloperation_slno.SelectedIndex = 0;
+        ddlpart_slno.SelectedIndex = 0;
+        ddlcpType.SelectedIndex = 0;
+        btnApproved.Enabled = false;
+    }
+
+    void DeleteData()
+    {
+        using (Database db = new Database("connString"))
+        {
+            // get partsl no, machine slno, opern
+            Crud_ControlPlan crudcp = new Crud_ControlPlan();
+            List<Class_ControlPlan> lstcp = crudcp.usp_ControlPlanSelect().Where(x => x.cp_slno == Convert.ToInt16(hdnSlNo.Value)).ToList();
+
+            int partslno = 0;
+            int opernslno = 0;
+            int machineslno = 0;
+
+            if (lstcp.Count > 0)
+            {
+                 partslno = lstcp[0].part_slno;
+                 opernslno = lstcp[0].operation_slno;
+                 machineslno = lstcp[0].machine_slno; 
+            }
+
+            //Delete control plan
+            db.DeleteWhere<Class_ControlPlan_Child>(" cp_slno=@0", Convert.ToInt32(hdnSlNo.Value));
+            db.DeleteWhere<Class_ControlPlan>(" cp_slno=@0", Convert.ToInt32(hdnSlNo.Value));
+
+            // set Obsolete ='N' for previous revision cp
+
+            string qryupdate = "update controlplan set Obsolete ='N', Submitstatus='N' where part_slno=" + partslno + " and operation_slno=" + opernslno + "  and  machine_slno=" + machineslno + " and "
+                               +" rev_no =(SELECT MAX(c.rev_no) from controlplan c where c.part_slno=controlplan.part_slno AND c.operation_slno=controlplan.operation_slno)";
+
+            db.Execute(qryupdate);
+        }
+        
+    }
+    protected void btnSave_Click(object sender, EventArgs e) {
+        SaveData(); 
+    }
+    void SaveData()
+    {
+        try
+        {
+            //System.Data.SqlClient.SqlTransaction transaction;
+
+            using (Database db = new Database("connString"))
+            {
+                Class_ControlPlan CData = new Class_ControlPlan();
+                Class_ControlMethods MData = new Class_ControlMethods();
+                CData.cpType = ddlcpType.SelectedValue;
+                CData.part_slno = Convert.ToInt32(ddlpart_slno.SelectedValue);
+                CData.partno = ddlpart_slno.Text;
+                CData.machine_slno = Convert.ToInt32(ddlmachine_slno.SelectedValue);
+                CData.operation_slno = Convert.ToInt32(ddloperation_slno.SelectedValue);
+                
+                CData.Obsolete = "N";
+                //Load Process Number
+                if (ddloperation_slno.SelectedIndex > 0 && ddlpart_slno.SelectedIndex > 0)
+                    {
+                        string process_no = db.ExecuteScalar<string>("select PM.process_no FROM parts P, partsmapping PM where P.part_slno =PM.part_slno and P.part_slno=@0 and PM.operation_slno =@1", Convert.ToInt32(ddlpart_slno.SelectedValue), Convert.ToInt32(ddloperation_slno.SelectedValue));
+                    // string cpType = db.ExecuteScalar<string>("select cptype from parts where part_slno=@0", Convert.ToInt16(ddlpart_slno.SelectedValue));   
+                        hdnProcessNo.Value = process_no;
+                    }             
+                
+                CData.process_no=hdnProcessNo.Value;
+                var cline = JsonConvert.DeserializeObject<List<Class_ControlPlan_Child>>(hdnchild.Value);
+                //added by selva on 10052016
+                if (cline.Count > 0)
+                {
+                    if (hdnEditMode.Value == "I")
+                    {
+                        string qry = "select * from controlplan where part_slno=@0 and obsolete='N' and operation_slno=@1 ";
+                        qry += " and rev_no =(SELECT MAX(c.rev_no) from controlplan c where c.part_slno=controlplan.part_slno AND c.operation_slno=controlplan.operation_slno)";
+                        
+                        int rv = db.ExecuteScalar<int>(qry, Convert.ToInt16(ddlpart_slno.SelectedValue), Convert.ToInt16(ddloperation_slno.SelectedValue));
+                        if (rv == 0)
+                        {
+                            var slno = db.Insert<Class_ControlPlan>(CData);
+                            hdnSlNo.Value = slno.ToString();
+                        }
+                        else 
+                        {
+                            Page.ClientScript.RegisterStartupScript(GetType(), "alert", "alert('Record Already exisits for this part and operation combination');window.location='controlplan_qry.aspx';", true);
+                        }
+                    }
+
+                    else
+                    {                        
+                        //CData = db.SingleOrDefaultById<Class_ControlPlan>(hdnSlNo.Value);
+                        //CData.cpType = ddlcpType.SelectedValue;
+
+                        db.Update(CData);
+                    }
+                }
+                db.DeleteWhere<Class_ControlPlan_Child>(" cp_slno=@0", Convert.ToInt32(hdnSlNo.Value));
+                foreach (Class_ControlPlan_Child cl in cline)
+                {
+                    cl.cp_slno = Convert.ToInt32(hdnSlNo.Value);
+                    
+                    // Start commented by selva on 18062016
+                    if (cl.FreqDesc != null)
+                    {
+                        if (cl.FreqDesc != "" && cl.FreqDesc.Trim().Length > 0)
+                        {
+                            cl.freq_slno = GetFreqslno(cl.FreqDesc);
+                        }
+                    }
+                    if (cl.methodDesc != null)
+                    {
+
+                        if (cl.methodDesc != "" && cl.methodDesc.Trim().Length > 0)
+                        {
+                            cl.method_slno = GetControlslno(cl.methodDesc);
+                        }
+                    }
+                    if (cl.evalTech != null)
+                    {
+
+                        if (cl.evalTech != "" && cl.evalTech.Trim().Length > 0)
+                        {
+                            cl.evalTech_slno = GetEveltechslno(cl.evalTech);
+                        }
+                    }
+
+                    if (cl.splfilename != null) {
+
+                        if (cl.splfilename != "" && cl.splfilename.Trim().Length > 0)
+                        {
+                            cl.splChar_slno  = GetSplcharSlno(cl.splfilename);
+                        }
+                    }
+                    //End commented by selva on 18062016
+
+
+                   // cl.pdt_slno = db.SingleOrDefault<clsProduct>(" where pdt_code=@0", cl.pdt_code).Pdt_Slno;
+                    
+
+                    db.Insert<Class_ControlPlan_Child>(cl);
+                    btnSubmit.Enabled = true;
+                }
+            }
+        //    ShowMessage("Updated", MessageType.Info);
+            Page.ClientScript.RegisterStartupScript(GetType(), "alert", "alert('Updated');", true);
+        }
+        catch (Exception ex2)
+        {
+            ShowMessage("Enter Valid Data" + ex2.Message, MessageType.Info);
+        }
+        
+    }
+
+    protected void btnSubmit_Click(object sender, EventArgs e) {
+
+        using (Database db = new Database("connString")) {
+           Class_ControlPlan c= db.SingleOrDefaultById<Class_ControlPlan>(hdnSlNo.Value);
+           c.Submitstatus = "Y";
+           db.Update(c);
+        }
+
+        ShowMessage("Updated", MessageType.Info);
+        ClearData();
+    }
+
+    protected void btnApproved_Click(object sender, EventArgs e) {
+
+        using (Database db = new Database("connString"))
+        {
+            Class_ControlPlan c = db.SingleOrDefaultById<Class_ControlPlan>(hdnSlNo.Value);
+            c.Submitstatus = "A";
+            db.Update(c);
+        }
+        ShowMessage("Approved", MessageType.Info);
+        ClearData();
+    }
+
+    void LoadGridData()
+    {
+        Crud_machines crud = new Crud_machines();
+        List<Class_machines> lst = crud.usp_machinesSelect().ToList();
+     
+    }
+    protected void ShowMessage(string Message, MessageType type)
+    {
+        ScriptManager.RegisterStartupScript(this, this.GetType(), System.Guid.NewGuid().ToString(), "ShowMessage('" + Message + "','" + type + "');", true);
+    }
+
+    protected void ddlpart_slno_OnSelectedIndexChanged(object sender, EventArgs e) {
+        LoadOperationsFromparts();
+    }
+
+    protected void ddloperation_slno_OnSelectedIndexChanged(object sender, EventArgs e) 
+    {
+
+        //string qry = "select * from controlplan where part_slno=@0  and operation_slno=@1 and (submitstatus IS null OR submitstatus='N') ";
+        string qry = "select * from controlplan where part_slno=@0 and obsolete='N' and operation_slno=@1 ";
+ 
+        qry += " and rev_no =(SELECT MAX(c.rev_no) from controlplan c where c.part_slno=controlplan.part_slno AND c.operation_slno=controlplan.operation_slno)";
+
+
+        using (Database db = new Database("connString"))
+        {
+
+            int rv = db.ExecuteScalar<int>(qry, Convert.ToInt16(ddlpart_slno.SelectedValue), Convert.ToInt16(ddloperation_slno.SelectedValue));
+            if (rv > 0)
+            {
+                Page.ClientScript.RegisterStartupScript(GetType(), "alert", "alert('Record Already exisits for this part and operation combination');window.location='controlplan_qry.aspx';", true);
+            }
+        }
+
+
+        LoadMachinesFromparts();
+
+        //LoadMachinesFromparts();
+    }
+
+    int GetEveltechslno(string evltech) {
+
+        using (Database db = new Database("connString")) {
+            return db.SingleOrDefault<Class_EvaluationTech>(" where evalTech=@0", evltech).evalTech_slno;
+        }
+    }
+
+    int GetFreqslno(string freq)
+    {
+
+        using (Database db = new Database("connString"))
+        {
+            return db.SingleOrDefault<Class_SampleFrequency>(" where FreqDesc=@0", freq).freq_slno;
+        }
+    }
+
+    int GetControlslno(string ctrl)
+    {
+
+        using (Database db = new Database("connString"))
+        {
+            return db.SingleOrDefault<Class_ControlMethods>(" where methodDesc=@0", ctrl).method_slno ;
+        }
+    }
+
+    int GetSplcharSlno(string filename) {
+
+        using (Database db = new Database("connString"))
+        {
+            return db.SingleOrDefault<Class_SpecialChars>(" where splCharFile=@0", filename).splChar_slno;
+        }
+    }
+
+    protected void btnrevision_Click(object sender, EventArgs e) {
+
+        using (Crud_ControlPlan cd = new Crud_ControlPlan()) {
+            //cd.usp_InitiateControlPlanRevision( )
+            cd.usp_InitiateControlPlanRevision(Convert.ToInt32(hdnSlNo.Value), txtrevreason.Text, txtUserRevNo.Text, txtUserRevDt.Text); 
+        }
+        PrepareForMail();
+        Page.ClientScript.RegisterStartupScript(GetType(), "alert", "alert('Revision Initiated');window.location='ControlPlan.aspx';", true);
+    }
+
+    
+    String GetSubmitStat(string cpno)    
+    {
+        using (Database db = new Database("connString"))
+        {
+            return db.SingleOrDefault<Class_ControlPlan>(" where cp_slno=@0", cpno).Submitstatus;
+        }
+    }
+
+    //string GetProcessNum(string ProcessNo)
+    //{
+    //    using (Database db = new Database("connString"))
+    //    {
+    //        return db.SingleOrDefault<Class_PartsMapping>(" where map_slno=@0", ProcessNo).process_no;
+    //    }
+    //}
+
+    void PrepareForMail()
+    {
+        //.check if mail triggers are enabled
+        string sql = "select enable_trigger from settings";
+        using (Database db = new Database("connString"))
+        {
+            var x = db.ExecuteScalar<string>(sql);
+            if (x == null)
+            {
+                return;
+            }
+            else if (x == "N")
+            {
+                return;
+            }
+        }
+
+        string s = string.Empty;
+
+        string subject = "Revision Details For Part " + ddlpart_slno.SelectedItem; 
+
+       // string[] parts = lblPartDtls.Text.Split(';');
+
+        string styl = "<style>table{max-width:100%;background-color:transparent;font-size:14px}th{text-align:left}.table{width:100%;margin-bottom:20px}.table>tbody>tr>td,.table>tbody>tr>th,.table>tfoot>tr>td,.table>tfoot>tr>th,.table>thead>tr>td,.table>thead>tr>th{padding:8px;line-height:1.428571429;vertical-align:top;border-top:1px solid #ddd}.table>thead>tr>th{vertical-align:bottom;border-bottom:2px solid #ddd}.table>tbody+tbody{border-top:2px solid #ddd}.table .table{background-color:#fff}.table-striped>tbody>tr:nth-child(odd)>td,.table-striped>tbody>tr:nth-child(odd)>th{background-color:#f9f9f9}body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;line-height:1.428571429;color:#333;background-color:#fff}h2{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-weight:500;line-height:1.1;color:inherit;text-align:center}</style>";
+
+        string bodycnt = "<center><b><label style='background-color:#0198FF; color:White;font-family:Calibri;font-size:medium;'>&nbsp;THIS IS AN AUTOGENERATED MAIL. DO NOT REPLY TO THIS!! &nbsp;</label></b></center>" +
+            "<body style='font-family:Calibri;font-size:medium;'>Dear Sir / Madam, <br/><br/>New Revision has been generated. Please find the details below:" +
+            "<table class='table table-striped'>" +
+            "<tr><th>Part No</th><td>" + ddlpart_slno.SelectedItem + "</td></tr>" +
+            "<tr><th>Operation</Th><td>" + ddloperation_slno.SelectedItem + "</td></tr>" +
+            "<tr><th>Revision No</th><td>" + txtUserRevNo.Text + "</td></tr>" +
+            "<tr><th>Revision Date</th><td>" + txtUserRevDt.Text + "</td></tr>" +
+            "<tr><th>Revision Reason</th><td>" + txtrevreason.Text + "</td></tr>" ;    
+
+        string mailBody = "<html><head>" + styl + "</head><body>" + bodycnt + "</body></html>";
+
+        List<string> toId = new List<string>();
+        List<string> ccId = new List<string>();        
+
+        sql = " select EmailId from Employees where del_status='N' and EmployeeSlNo= " + hdnemplslno.Value;
+
+        using (Database db = new Database("connString"))
+        {
+            toId = db.Fetch<string>(sql).ToList();
+        }
+
+        // if no TO mailids defined add originator in to mail id
+        if (toId.Count == 0)
+        {
+            toId.Add(userInfo[0].EmailId);
+        }
+
+        //  get cc mailers 
+        sql = " select EmailId from Employees where del_status='N' and EmployeeSlNo != " + hdnemplslno.Value;
+        using (Database db = new Database("connString"))
+        {
+            ccId = db.Fetch<string>(sql).ToList();
+        }
+
+        // add cc mail ids
+        ccId.Add(userInfo[0].EmailId);
+       // ccId.Add("banuprakash.m@qsqspl.com");
+
+        //// and hod mail id in the cc
+        //sql = "select mailid from NCD_Employees where is_hod='Y' and pdtgroup_name='" + ddlPdtGroup.SelectedValue + "'";
+        //List<string> ccId3 = new List<string>();
+        //using (Database db = new Database("connString"))
+        //{
+        //    var y = db.ExecuteScalar<string>(sql);
+        //    if (y != null)
+        //    {
+        //        ccId.Add(y);
+        //    }
+        //}
+
+
+        //// get the qa-head mail id
+        //sql = "select mailid from ncd_employees where is_qa_head='Y'";
+        //using (Database db = new Database("connString"))
+        //{
+        //    var y = db.ExecuteScalar<string>(sql);
+        //    if (y != null)
+        //    {
+        //        ccId.Add(y);
+        //    }
+        //}
+
+        List<string> newToId = toId.Distinct().ToList();
+        List<string> newCcId = ccId.Distinct().ToList(); 
+     
+
+        // send mail
+        mail ml = new mail();
+        ml.SendMail(toMailId: newToId, mailSubject: subject, bodyText: mailBody, ccMailId: newCcId);
+    }
+        
+}

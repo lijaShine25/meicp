@@ -1,0 +1,547 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.master" AutoEventWireup="true" CodeFile="ControlPlan.aspx.cs" Inherits="ControlPlan" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="ContentPlaceHolder1" runat="Server">
+    <link href="Scripts/handsontable/jquery.handsontable.full.css" rel="stylesheet" />
+    <style>
+        #modalQaApproval .modal-dialog {
+            width: 75%;
+        }
+
+        .datepicker{z-index:1151 !important;}
+        .auto-style1 {
+            width: 157px;
+        }
+    </style>
+    <form id="Form1" role="form" runat="server">
+        <div class="content-wrapper">
+            <!-- Content Header (Page header) -->
+            <section class="content-header">
+                <h1>Control Plan
+                </h1>
+            </section>
+            <section class="content">
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div class="box no-border no-margin">
+                            <div class="messagealert" id="alert_container">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-8">
+                        <div class="pull-left">
+                            <asp:Button Text="Initiate Revision" runat="server" CssClass="btn btn-warning" ID="btnirev" Enabled="false" />
+                            <asp:Button ID="btnApproved" Text="Approved" runat="server" CssClass="btn btn-success" Enabled="false" OnClick="btnApproved_Click" />
+                        </div>
+                        <div class="pull-right">
+                            <asp:Button ID="btnSave" Text="Save" runat="server" CssClass="btn btn-primary" ValidationGroup="mandatories" OnClick="btnSave_Click" />
+                            <asp:Button ID="btnQuery" Text="Query" runat="server" CssClass="btn btn-info" PostBackUrl="~/controlplan_qry.aspx" />
+                            <asp:Button ID="btnDelete" Text="Delete" runat="server" CssClass="btn btn-danger" OnClientClick="return confirmation();" OnClick="btnDelete_Click" />
+                            <asp:Button ID="btnClear" Text="Clear" runat="server" CssClass="btn btn-primary" OnClick="btnClear_Click" />
+                            <asp:Button ID="btnSubmit" Text="SUBMIT" runat="server" CssClass="btn btn-warning" Enabled="false" OnClick="btnSubmit_Click" />
+                        </div>
+                    </div>
+                </div>
+
+
+                <p></p>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="box box-primary">
+                            <div class="box-body">
+                                <div class="form-group has-success">
+                                    <table class="table table-bordered table-condensed">
+                                        <tr>
+                                            <td style="vertical-align: middle;">
+                                                <label for="txtPartNo"><i class="fa fa-check-circle"></i>&nbsp;Part# </label>
+                                            </td>
+                                            <td>
+                                                <asp:DropDownList runat="server" ID="ddlpart_slno" CssClass="form-control" AutoPostBack="true" OnSelectedIndexChanged="ddlpart_slno_OnSelectedIndexChanged">
+                                                    <asp:ListItem Text="Select..." />
+                                                </asp:DropDownList>
+                                                <asp:RequiredFieldValidator ID="RequiredFieldValidator2" ErrorMessage="Data Missing!" ControlToValidate="ddlpart_slno" runat="server" InitialValue="Select..."
+                                                    CssClass="label label-danger" Display="Dynamic" ValidationGroup="mandatories" />
+                                            </td>
+                                            <td style="vertical-align: middle;">
+                                                <label for="txtCPType"><i class="fa fa-check-circle"></i>&nbsp;Control Plan Type </label>
+                                            </td>
+                                            <td>
+                                                <asp:DropDownList runat="server" ID="ddlcpType" CssClass="form-control">
+                                                    <asp:ListItem Text="Select..." />
+                                                    <asp:ListItem Text="PROTOTYPE" Value="PROTOTYPE" />
+                                                    <asp:ListItem Text="PRE-LAUNCH" Value="PRE-LAUNCH" />
+                                                    <asp:ListItem Text="PRODUCTION" Value="PRODUCTION" />
+                                                </asp:DropDownList>
+                                                <asp:RequiredFieldValidator ID="RequiredFieldValidator1" ErrorMessage="Data Missing!" ControlToValidate="ddlcpType" runat="server" InitialValue="Select..."
+                                                    CssClass="label label-danger" Display="Dynamic" ValidationGroup="mandatories" />
+                                            </td>
+                                            
+                                            <td style="vertical-align: middle;">
+                                                <label for="txtOperation"><i class="fa fa-check-circle"></i>&nbsp;Operation</label>
+                                            </td>
+                                            <td>
+                                                <asp:DropDownList runat="server" ID="ddloperation_slno" CssClass="form-control" AutoPostBack="true" OnSelectedIndexChanged="ddloperation_slno_OnSelectedIndexChanged">
+                                                    <asp:ListItem Text="Select..." />
+                                                </asp:DropDownList>
+                                                <asp:RequiredFieldValidator ID="RequiredFieldValidator3" ErrorMessage="Data Missing!" ControlToValidate="ddloperation_slno" runat="server" InitialValue="Select..."
+                                                    CssClass="label label-danger" Display="Dynamic" ValidationGroup="mandatories" />
+                                            </td>
+                                            <td style="vertical-align: middle;">
+                                                <label for="txtMachineType"><i class="fa fa-check-circle"></i>&nbsp;Machine</label>
+                                            </td>
+                                            <td>
+                                                <asp:DropDownList runat="server" ID="ddlmachine_slno" CssClass="form-control">
+                                                    <asp:ListItem Text="Select..." />
+                                                </asp:DropDownList>
+                                                <asp:RequiredFieldValidator ID="RequiredFieldValidator4" ErrorMessage="Data Missing!" ControlToValidate="ddlmachine_slno" runat="server" InitialValue="Select..."
+                                                    CssClass="label label-danger" Display="Dynamic" ValidationGroup="mandatories" />
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="box box-primary">
+                            <div class="box-body">
+                                <div style="overflow: auto;">
+                                    <div id="cp" class="handsontable"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <asp:HiddenField ID="hdnEditMode" runat="server" Value="I" />
+        <asp:HiddenField ID="hdnSlNo" runat="server" Value="-1" />
+        <asp:HiddenField ID="hdnchild" runat="server" />
+        <asp:HiddenField ID="hdnemplslno" runat="server" />
+        <asp:HiddenField ID="hdnsubmitstatus" runat="server" Value="N" />
+
+        <div class="modal fade" id="modalQaApproval" tabindex="-1" role="dialog" aria-labelledby="modalQaApproval"
+            aria-hidden="true">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                            &times;</button>
+                        <h4 class="modal-title" id="H2">Initiate Revision</h4>
+                        <br />
+                    </div>
+                   
+                        <div class="modal-body">
+                        <div class="box-default">
+                            <div class="form-group">
+                                <label for="txtUserRevNo">Rev.No.</label>
+                                <asp:TextBox runat="server" ID="txtUserRevNo" CssClass="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label for="txtUserRevDt">Rev.Date</label>
+                                <asp:TextBox runat="server" ID="txtUserRevDt" CssClass="form-control myDate" />
+                            </div>
+                            <div class="form-group">
+                                <label for="txtRevReason">Rev.Reason</label>
+                                <asp:TextBox ID="txtrevreason" runat="server" CssClass="form-control" TextMode="MultiLine"></asp:TextBox>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <asp:Button ID="btnrevision" runat="server" Text="Revision" CssClass="btn btn-flat btn-info" OnClick="btnrevision_Click" />
+                        <button type="button" class="btn btn-default" data-dismiss="modal">
+                            Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <asp:HiddenField ID="hdnCpType" runat="server" Value="" />
+        <asp:HiddenField ID="hdnProcessNo" runat="server" Value="" />
+        <asp:HiddenField ID="hdnMachine" runat="server" Value="" />
+      <asp:HiddenField ID="hdnuser" runat="server" Value="" />
+    </form>
+
+    <link href="Content/handsontable/handsontable.full.css" rel="stylesheet" />
+    <script type="text/javascript" src="Scripts/handsontable/handsontable.full.min.js"></script>
+    <script type="text/javascript" src="Scripts/ajax.js"></script>
+
+    <script type="text/javascript">
+        var data = [];
+        $("document").ready(function () {
+
+            $('.left-side').toggleClass("collapse-left");
+            $(".right-side").toggleClass("strech");
+            $('#<%=txtUserRevDt.ClientID %>').datepicker({
+                format: 'dd/mm/yyyy',
+                showOtherMonths: true,
+               showStatus: true,
+                changeMonth: true,
+                changeYear: true,
+                showWeek: true,
+                autoclose: true,
+                firstDay: 1,
+                defaultDate: "+1w",
+                numberOfMonths: 1
+            });
+
+
+            var $container = $("#cp");
+            var data = [];
+
+            var pseudoHeaderRenderer = function (instance, td, row, col, prop, value, cellProperties) {
+                Handsontable.TextCell.renderer.apply(this, arguments);
+                // Handsontable.renderers.TextRenderer.apply(this, arguments);
+
+                var style = td.style;
+                style.textAlign = 'center';
+                style.fontStyle = 'normal';
+                style.fontSize = '8';
+                style.color = '#000';
+                style.background = '#eee';
+                style.fontWeight = 'normal';
+
+                if (row == 0) {
+                    switch (col) {
+                        case 0: td.innerHTML = "Characteristics"; break;
+                        case 3: td.innerHTML = "Spl.Char.Class"; break;
+                        case 4: td.innerHTML = "Methods"; break;
+                        case 10: td.innerHTML = "RES"; break;
+                        case 11: td.innerHTML = "Control Methods"; break;
+                        case 12: td.innerHTML = "Reaction Plan"; break;
+                       
+                    }
+                } else if (row == 1) {
+                    switch (col) {
+                        case 0: td.innerHTML = "Dim.No."; break;
+                        case 1: td.innerHTML = "Product"; break;
+                        case 2: td.innerHTML = "Process"; break;
+                        case 4: td.innerHTML = "Product / Process Specification Tolerance"; break;
+                        case 6: td.innerHTML = "Evaluation Measurement Technique"; break;
+                        case 7: td.innerHTML = "Gauge/ Fixture Code"; break;
+                        case 8: td.innerHTML = "Sample"; break;
+                    }
+                } else if (row == 2) {
+                    switch (col) {
+                        case 4: td.innerHTML = "Min"; break;
+                        case 5: td.innerHTML = "Max"; break;
+                        case 8: td.innerHTML = "Size"; break;
+                        case 9: td.innerHTML = "Freq"; break;
+                    }
+                }
+                return td;
+            }
+            var splchar = [];
+            splchar = GetAjaxArray('', 'GetSpecialChars', 'splCharFile');
+            //alert(splchar);
+            var freq = GetAjaxArray('', 'GetFrequencies', 'FreqDesc');
+            var cm = GetAjaxArray('', 'GetControlmethods', 'methodDesc');
+            var gage = GetAjaxArray('', 'GetGauges', 'md_id');
+            var evalarray = GetAjaxArray('', 'GetEvalTech', 'evalTech');
+
+            $container.handsontable({
+                startRows: 5, //number of rows to be displayed at initialization
+                startCols: 12, // number of columns to be displayed
+                minRows: 4,
+                minCols: 5,
+                //data: data,
+                height: 600,
+                rowHeaders: false, //show row headers
+                colHeaders: false, //show column headers
+                minSpareRows: 5, //minimum last row
+                minSpareCols: 0,
+                enterMoves: { row: 0, col: 1 },
+                autoWrapRow: true,
+                contextMenu: false,
+                outsideClickDeselects: false, //deselect if clicked outside
+                removeRowPlugin: true, //remove row other than from context menu
+                currentRowClassName: 'currentRow', //css class for selected row
+                columns: [
+                            { data: "dimn_no" },
+                            { data: "product_char" },
+                            { data: "process_char" },
+                            { data: "splChar_slno", type: 'dropdown', source: splchar,  allowEmpty: true, strict: true, filter: true },
+                            { data: "tol_min" },
+                            { data: "tol_max" },
+                            { data: "evalTech", type: 'dropdown', source: evalarray, strict: true, filter: true },
+                            { data: "gaugeCode", type: 'dropdown', source: gage, strict: true, filter: true },
+                            { data: "sampleSize" },
+                            { data: "FreqDesc", type: 'dropdown', source: freq, strict: true, filter: true },
+                            { data: "res" },
+                            { data: "methodDesc", type: 'dropdown', source: cm, strict: true, filter: true },
+                            { data: "reactionPlan" },
+                            
+
+                ], //column mapping to the respecitve data fields
+                afterSelectionEnd: function (r, c, r1, c1) {
+                    row = r;
+                    col = c;
+                }, // this function is called when a row is selected it can have multiple rows and columns for multiselection here we have used the single row selection only
+                // afterChange: afterchange, //calling of afterchange function when an afterChange event occurs
+                contextMenu: ['row_above', 'row_below', 'remove_row'],
+                mergeCells: [
+                    { row: 0, col: 0, rowspan: 1, colspan: 3 },   // characteristcs
+                    { row: 0, col: 3, rowspan: 3, colspan: 1 },  //spl char class
+                    { row: 0, col: 4, rowspan: 1, colspan: 6 },  //methods
+                    { row: 1, col: 4, rowspan: 1, colspan: 2 },  //product/process spec.tolerance
+                    { row: 1, col: 5, rowspan: 1, colspan: 1 },  //evaluation
+                    { row: 1, col: 6, rowspan: 1, colspan: 1 },  //gauge fixture code
+                    { row: 1, col: 8, rowspan: 1, colspan: 2 },  //sample
+                    { row: 0, col: 10, rowspan: 3, colspan: 1 },  //Res
+                    { row: 0, col: 11, rowspan: 3, colspan: 1 },  //Control Method
+                    { row: 0, col: 12, rowspan: 3, colspan: 1 },//Reaction Plan
+                  
+                ],
+                cells: function (row, col, prop) {
+                    var cellProperties = {};
+                    if (row === 0 || row === 1 || row === 2) {
+                        return {
+                            renderer: pseudoHeaderRenderer, readOnly: true
+                        }
+                    }
+                },
+                removeRowPlugin: true //remove row other than from context menu
+            });
+
+            function customRenderer(instance, td) {
+                Handsontable.renderers.TextRenderer.apply(this, arguments);
+                return td;
+            }
+
+
+            function removeAllBlankOrNull(JsonObj) {
+                $.each(JsonObj, function (key, value) {
+                    if (value === "" || value === null) {
+                        delete JsonObj[key];
+                    }
+                    else if (typeof (value) === "object") {
+                        JsonObj[key] = removeAllBlankOrNull(value);
+                    }
+                });
+                return JsonObj;
+            }
+
+
+
+            //Submit Button Onclick
+
+            var hotIsValid = true;
+            //Submit Button Onclick
+
+            $('#<%=btnSave.ClientID %>').click(function (e) {
+
+                hot = $container.data('handsontable');
+
+                //  var chk = valproduct() what is this ???
+
+                //if (chk == 1) {
+                var r1 = getHotData(hot);
+                if (hotIsValid === false) {
+                    e.preventDefault();
+                    alert('some data are invalid please check');
+                    return false;
+                }
+
+                //  alert(r1);
+
+
+                $('#<%=hdnchild.ClientID %>').val(r1);
+                // }
+                //else {
+                //  return false;
+                //}
+
+            });
+
+
+            function getHotData(myhot) {
+                var gridData = myhot.getData();
+                var hotGridData = {};
+                var hotArray = [];
+                $.each(gridData, function (rowKey, object) {
+                    if (!myhot.isEmptyRow(rowKey)) hotGridData[rowKey] = object;
+                });
+
+                $.each(hotGridData, function (x, y) {
+                    var obj = new Object();
+                    var freqval = 0, cmval = 0, evalval = 0;
+                    if (hotGridData[x][9] != "" && hotGridData[x][9] != null)
+                    { freqval = GetAjaxValue(hotGridData[x][9], 'GetFreqslno', 'freq'); }
+
+                    if (hotGridData[x][11] != "" && hotGridData[x][11] != null)
+                    { cmval = GetAjaxValue(hotGridData[x][11], 'GetControlslno', 'ctrl'); }
+
+                    if (hotGridData[x][6] != "" && hotGridData[x][6] != null)
+                    { evalval = GetAjaxValue(hotGridData[x][6], 'GetEveltechslno', 'evltech'); }
+
+                    hotIsValid = true;
+                    if (freqval === -1 || cmval === -1 || evalval === -1) {
+                        hotIsValid = false;
+                        return false;
+                    }
+                    obj.dimn_no = hotGridData[x][0]; // hotGridData[x].dimn_no;
+                    obj.product_char = hotGridData[x][1]; //hotGridData[x].product_char;
+                    obj.process_char = hotGridData[x][2]; //hotGridData[x].process_char;
+                    obj.splChar_slno = 0; //hotGridData[x].splChar_slno;
+                    obj.tol_min = hotGridData[x][4]; //hotGridData[x].tol_min;
+                    obj.tol_max = hotGridData[x][5]; //hotGridData[x].tol_max;
+                    obj.gaugeCode = hotGridData[x][7]; //hotGridData[x].gaugeCode;
+                    obj.sampleSize = hotGridData[x][8]; //hotGridData[x].sampleSize;
+                    obj.FreqDesc = hotGridData[x][9]; //hotGridData[x].sampleFreq;
+                    obj.res = hotGridData[x][10]; //hotGridData[x].res;
+                    obj.method_slno = cmval; //hotGridData[x].method_slno;
+                    obj.reactionPlan = hotGridData[x][12]; //hotGridData[x].reactionPlan;
+                    obj.methodDesc = hotGridData[x][11];
+                    obj.evalTech = hotGridData[x][6];
+                    obj.evalTech_slno = evalval;
+                    obj.freq_slno = freqval;
+                    obj.splfilename = hotGridData[x][3];
+                  
+                    hotArray.push(obj);
+                });
+                var hotresult = JSON.stringify(hotArray);
+                return hotresult;
+            }
+
+            loadData();
+
+            function loadData() {
+                var slno = $('#<%=hdnSlNo.ClientID %>').val();
+                if (slno > 0) {
+                    var manArray = [];
+                    var dArray = [[]];
+
+
+                    var manhot = $container.data('handsontable');
+
+                    $.ajax({
+                        type: "POST",
+                        contentType: "application/json; charset=utf-8",
+                        url: "Data.asmx/GetControlplanChildData",
+                        data: "{'cp_slno' : " + slno + "}",
+                        dataType: "json",
+                        success: function (res) {
+                            var data = JSON.parse(res.d);
+                            $(data).each(function (i, j) {
+
+                                //  manArray.push(getHotobject(j));
+                                for (var i = 0; i < data.length; i++) {
+                                    dArray[i] = new Array();
+
+                                    //'dArray[i][0] = data[i].MachineSlNo + ":" + data[i].MachineDesc;
+                                    dArray[i][0] = data[i].dimn_no;
+                                    dArray[i][1] = data[i].product_char;
+                                    dArray[i][2] = data[i].process_char;
+                                    dArray[i][3] = data[i].splfilename;
+                                    dArray[i][4] = data[i].tol_min;
+                                    dArray[i][5] = data[i].tol_max;
+                                    dArray[i][6] = data[i].evalTech;
+                                    dArray[i][7] = data[i].gaugeCode;
+                                    dArray[i][8] = data[i].sampleSize;
+                                    dArray[i][9] = data[i].FreqDesc;
+                                    dArray[i][10] = data[i].res;
+                                    dArray[i][11] = data[i].methodDesc;
+                                    dArray[i][12] = data[i].reactionPlan;
+                                  
+
+                                }
+
+                            });
+
+
+                        },
+                        error: function (jqxhr, status, error) {
+                            var msg = JSON.parse(jqxhr.responseText);
+                            errormsg += JSON.stringify(msg);
+                            alert(errormsg);
+                        }
+                    }).done(function () {
+                        if (typeof dArray !== 'undefined' && dArray.length > 0) { manhot.populateFromArray(3, 0, dArray); }
+                        $('#<%=btnSave.ClientID %>').prop('disabled', false);
+                        $('#<%=btnDelete.ClientID %>').prop('disabled', false);
+                        if ($('#<%=hdnsubmitstatus.ClientID %>').val() == 'Y' || $('#<%=hdnsubmitstatus.ClientID %>').val() == 'A') {
+                            $('#<%=btnSave.ClientID %>').prop('disabled', true);
+                            $('#<%=btnDelete.ClientID %>').prop('disabled', true);
+                            manhot.updateSettings({
+                                mergeCells: [
+                    { row: 0, col: 0, rowspan: 1, colspan: 3 },   // characteristcs
+                    { row: 0, col: 3, rowspan: 3, colspan: 1 },  //spl char class
+                    { row: 0, col: 4, rowspan: 1, colspan: 6 },  //methods
+                    { row: 1, col: 4, rowspan: 1, colspan: 2 },  //product/process spec.tolerance
+                    { row: 1, col: 5, rowspan: 1, colspan: 1 },  //evaluation
+                    { row: 1, col: 6, rowspan: 1, colspan: 1 },  //gauge fixture code
+                    { row: 1, col: 8, rowspan: 1, colspan: 2 },  //sample
+                    { row: 0, col: 10, rowspan: 3, colspan: 1 },  //Res
+                    { row: 0, col: 11, rowspan: 3, colspan: 1 },  //Control Method
+                    { row: 0, col: 12, rowspan: 3, colspan: 1 },  //Reaction Plan
+                    
+                                ],
+                                cells: function (row, col, prop) {
+                                    var cellProperties = {};
+                                    if (row === 0 || row === 1 || row === 2) {
+                                        return {
+                                            renderer: pseudoHeaderRenderer, readOnly: true
+                                        }
+                                    }
+                                    else if (row >= 3) {
+                                        cellProperties.readOnly = false;
+
+                                        return cellProperties;
+                                    }
+                                }
+                            });
+                            //   alert('Data submitted');
+
+
+                        }
+                        if ($('#<%=hdnuser.ClientID %>').val() == 'Y') {
+                            $('#<%=btnSave.ClientID %>').prop('disabled', false);
+                        }
+
+                    });
+                }
+            }
+
+            function getHotobject(myobj) {
+                var obj = new Object();
+                obj.dimn_no = myobj.dimn_no;
+                obj.product_char = myobj.product_char;
+                obj.process_char = myobj.process_char;
+                obj.splfilename = myobj.splfilename;
+                obj.tol_min = myobj.tol_min;
+                obj.tol_max = myobj.tol_max;
+                obj.gaugeCode = myobj.gaugeCode;
+                obj.sampleSize = myobj.sampleSize;
+                obj.FreqDesc = myobj.FreqDesc;
+                obj.res = myobj.res;
+                obj.reactionPlan = myobj.reactionPlan;
+                obj.methodDesc = myobj.methodDesc;
+                obj.evalTech = myobj.evalTech;
+               
+
+                return obj;
+            }
+
+            $('#<%=btnirev.ClientID %>').on('click', function (e) {
+                e.preventDefault();
+                var slno = $('#<%=hdnSlNo.ClientID %>').val();
+                var ss = $('#<%=hdnsubmitstatus.ClientID %>').val();
+                if (slno > 0 && ss == 'A') {
+
+                    $('#modalQaApproval').modal('show');;
+                } else {
+
+                    alert('Revision cannot be initiated. Either no record is chosen or the current control plan is not approved');
+                }
+            });
+
+        });                           // end of document ready
+
+    </script>
+
+
+</asp:Content>
+
+<%--<a href="ControlPlan.aspx.cs">ControlPlan.aspx.cs</a>--%>
