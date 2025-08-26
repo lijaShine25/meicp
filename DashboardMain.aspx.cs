@@ -100,6 +100,7 @@ where sm.obsolete = 'N'
             )
           )
 ) as TotalCount;";
+
             int notSubmittedSop = db.ExecuteScalar<int>(query5);
 
             // Query 6: SUBMITTED SOP
